@@ -502,7 +502,7 @@ def run_eval_linear(
 
     n_last_blocks_list = [1, 4]
     n_last_blocks = max(n_last_blocks_list)
-    autocast_ctx = partial(torch.cuda.amp.autocast, enabled=True, dtype=autocast_dtype)
+    autocast_ctx = partial(torch.autocast, enabled=True, dtype=autocast_dtype, device_type="cuda")
     feature_model = ModelWithIntermediateLayers(model, n_last_blocks, autocast_ctx)
     sample_output = feature_model(train_dataset[0][0].unsqueeze(0).cuda())
 

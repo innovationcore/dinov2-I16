@@ -1,0 +1,7 @@
+# this corresponds to the default config
+train:
+  dataset_path: MyDataset:root=data/train
+  batch_size_per_gpu: 64
+  saveckp_freq: 100
+student:
+  block_chunks: 4

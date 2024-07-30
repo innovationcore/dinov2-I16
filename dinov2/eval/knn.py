@@ -342,7 +342,7 @@ def eval_knn_with_model(
         transform=transform,
     )
 
-    with torch.cuda.amp.autocast(dtype=autocast_dtype):
+    with torch.autocast(device_type="cuda", dtype=autocast_dtype):
         results_dict_knn = eval_knn(
             model=model,
             train_dataset=train_dataset,

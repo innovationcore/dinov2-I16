@@ -1,3 +1,30 @@
+# DINOv2 patch
+
+This is a patch for the original repository to make it work with the latest version of PyTorch (>2.1).
+
+Install the dependencies using the following command:
+
+```bash
+conda env create -f conda.yaml
+conda activate dinov2
+```
+
+Then run the following command to install the package:
+
+```bash
+pip install -e .
+```
+
+Then add the training images to `data/train`.
+
+You can now start the training using torchrun instead of submitit. The following command will start the training on 2 GPUs:
+
+```bash
+torchrun --nproc_per_node 2 train.py --config-file dinov2/configs/train/vitl16_short_custom.yaml --output-dir output
+```
+
+Thanks a lot to https://github.com/csaroff/dinov2 for an example of custom dataset.
+
 :new: [2023-10-26] *Added DINOv2 backbones with registers, following [Vision Transformers Need Registers](https://arxiv.org/abs/2309.16588).*
 
 # DINOv2: Learning Robust Visual Features without Supervision

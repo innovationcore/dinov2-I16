@@ -385,7 +385,7 @@ def eval_log_regression_with_model(
     else:
         finetune_dataset = None
 
-    with torch.cuda.amp.autocast(dtype=autocast_dtype):
+    with torch.autocast(device_type="cuda", dtype=autocast_dtype):
         results_dict_logreg = eval_log_regression(
             model=model,
             train_dataset=train_dataset,
