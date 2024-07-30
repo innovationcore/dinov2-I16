@@ -157,7 +157,7 @@ def do_train(cfg, model, resume=False):
 
     periodic_checkpointer = PeriodicCheckpointer(
         checkpointer,
-        period=3 * OFFICIAL_EPOCH_LENGTH,
+        period=cfg.train.saveckp_freq,
         max_iter=max_iter,
         max_to_keep=3,
     )
