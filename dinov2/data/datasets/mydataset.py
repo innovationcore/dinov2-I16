@@ -6,13 +6,13 @@ from fastai.vision.all import Path, get_image_files, verify_images
 from dinov2.data.datasets.extended import ExtendedVisionDataset
 
 class MyDataset(ExtendedVisionDataset):
-    def __init__(self, root: str, verify_images: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
+    def __init__(self, root: str, verify: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
         super().__init__(root, transforms, transform, target_transform)
 
         self.root = Path(root).expanduser()
         image_paths = get_image_files(self.root)
         invalid_images = set()
-        if verify_images:
+        if verify:
             invalid_images = set(verify_images(image_paths))
         self.image_paths = [p for p in image_paths if p not in invalid_images]
 
