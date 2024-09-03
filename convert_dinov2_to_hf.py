@@ -40,20 +40,20 @@ logger = logging.get_logger(__name__)
 os.environ["XFORMERS_DISABLED"] = "1"
 
 
-def get_dinov2_config(model_name, image_classifier=False):
-    config = Dinov2Config(image_size=518, patch_size=14)
+def get_dinov2_config(args, image_classifier=False):
+    config = Dinov2Config(image_size=args.image_size, patch_size=args.patch_size)
 
     # size of the architecture
-    if "vits" in model_name:
+    if "vits" in args.model_name:
         config.hidden_size = 384
         config.num_attention_heads = 6
-    elif "vitb" in model_name:
+    elif "vitb" in args.model_name:
         pass
-    elif "vitl" in model_name:
+    elif "vitl" in args.model_name:
         config.hidden_size = 1024
         config.num_hidden_layers = 24
         config.num_attention_heads = 16
-    elif "vitg" in model_name:
+    elif "vitg" in args.model_name:
         config.use_swiglu_ffn = True
         config.hidden_size = 1536
         config.num_hidden_layers = 40
@@ -146,17 +146,18 @@ def prepare_img():
 
 
 @torch.no_grad()
-def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_path, push_to_hub=False):
+def convert_dinov2_checkpoint(args):
+
     """
     Copy/paste/tweak model's weights to our DINOv2 structure.
     """
 
     # define default Dinov2 configuration
-    image_classifier = "1layer" in model_name
-    config = get_dinov2_config(model_name, image_classifier=image_classifier)
+    image_classifier = "1layer" in args.model_name
+    config = get_dinov2_config(args, image_classifier=image_classifier)
 
     # load original model from torch hub
-    original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    original_model = torch.hub.load("facebookresearch/dinov2", args.model_name.replace("_1layer", ""))
     original_model.eval()
 
     # load state_dict of original model, remove and rename some keys
@@ -184,7 +185,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
             "dinov2_vitl14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_linear_head.pth",
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
-        url = model_name_to_classifier_dict_url[model_name]
+        url = model_name_to_classifier_dict_url[args.model_name]
         classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
@@ -198,8 +199,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
     # preprocess image
     transformations = transforms.Compose(
         [
-            transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
-            transforms.CenterCrop(224),
+            transforms.Resize(args.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.CenterCrop(args.image_size),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=IMAGENET_DEFAULT_MEAN,  # these are RGB mean+std values
@@ -211,7 +212,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
     processor = BitImageProcessor(
-        size={"shortest_edge": 256},
+        size={"shortest_edge": args.image_size},
         resample=PILImageResampling.BICUBIC,
         image_mean=IMAGENET_DEFAULT_MEAN,
         image_std=IMAGENET_DEFAULT_STD,
@@ -234,14 +235,14 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
         assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
     print("Looks ok!")
 
-    if (pytorch_dump_folder_path is not None) and (hf_folder_path is not None):
-        Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
-        print(f"Saving model {model_name} to {hf_folder_path}")
-        model.save_pretrained(hf_folder_path)
-        print(f"Saving image processor to {hf_folder_path}")
-        processor.save_pretrained(hf_folder_path)
+    if (args.pytorch_dump_folder_path is not None) and (args.hf_folder_path is not None):
+        Path(args.pytorch_dump_folder_path).mkdir(exist_ok=True)
+        print(f"Saving model {args.model_name} to {args.hf_folder_path}")
+        model.save_pretrained(args.hf_folder_path)
+        print(f"Saving image processor to {args.hf_folder_path}")
+        processor.save_pretrained(args.hf_folder_path)
 
-    if push_to_hub:
+    if args.push_to_hub:
         model_name_to_hf_name = {
             "dinov2_vits14": "dinov2-small",
             "dinov2_vitb14": "dinov2-base",
@@ -253,7 +254,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
             "dinov2_vitg14_1layer": "dinov2-giant-imagenet1k-1-layer",
         }
 
-        name = model_name_to_hf_name[model_name]
+        name = model_name_to_hf_name[args.model_name]
         model.push_to_hub(f"facebook/{name}")
         processor.push_to_hub(f"facebook/{name}")
 
@@ -284,8 +285,14 @@ if __name__ == "__main__":
         "--hf_folder_path", default=None, type=str, help="Path to the output HF model."
     )
     parser.add_argument(
+        "--image_size", default=None, type=int, help="Path to the output HF model."
+    )
+    parser.add_argument(
+        "--patch_size", default=None, type=int, help="Path to the output HF model."
+    )
+    parser.add_argument(
         "--push_to_hub", action="store_true", help="Whether or not to push the converted model to the 🤗 hub."
     )
 
     args = parser.parse_args()
-    convert_dinov2_checkpoint(args.model_name, args.pytorch_dump_folder_path, args.hf_folder_path, args.push_to_hub)
+    convert_dinov2_checkpoint(args)
