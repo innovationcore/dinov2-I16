@@ -143,7 +143,7 @@ def prepare_img():
 
 
 @torch.no_grad()
-def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=False):
+def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_path, push_to_hub=False):
     """
     Copy/paste/tweak model's weights to our DINOv2 structure.
     """
@@ -231,12 +231,12 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
     print("Looks ok!")
 
-    if pytorch_dump_folder_path is not None:
+    if (pytorch_dump_folder_path is not None) and (hf_folder_path is not None):
         Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
-        print(f"Saving model {model_name} to {pytorch_dump_folder_path}")
-        model.save_pretrained(pytorch_dump_folder_path)
-        print(f"Saving image processor to {pytorch_dump_folder_path}")
-        processor.save_pretrained(pytorch_dump_folder_path)
+        print(f"Saving model {model_name} to {hf_folder_path}")
+        model.save_pretrained(hf_folder_path)
+        print(f"Saving image processor to {hf_folder_path}")
+        processor.save_pretrained(hf_folder_path)
 
     if push_to_hub:
         model_name_to_hf_name = {
@@ -278,8 +278,11 @@ if __name__ == "__main__":
         "--pytorch_dump_folder_path", default=None, type=str, help="Path to the output PyTorch model directory."
     )
     parser.add_argument(
+        "--hf_folder_path", default=None, type=str, help="Path to the output HF model."
+    )
+    parser.add_argument(
         "--push_to_hub", action="store_true", help="Whether or not to push the converted model to the 🤗 hub."
     )
 
     args = parser.parse_args()
-    convert_dinov2_checkpoint(args.model_name, args.pytorch_dump_folder_path, args.push_to_hub)
+    convert_dinov2_checkpoint(args.model_name, args.pytorch_dump_folder_path, args.hf_folder_path, args.push_to_hub)
