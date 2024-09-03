@@ -16,6 +16,7 @@
 
 URL: https://github.com/facebookresearch/dinov2/tree/main
 """
+import os
 
 import argparse
 import json
@@ -35,6 +36,8 @@ from transformers.utils import logging
 
 logging.set_verbosity_info()
 logger = logging.get_logger(__name__)
+
+os.environ["XFORMERS_DISABLED"] = "1"
 
 
 def get_dinov2_config(model_name, image_classifier=False):
