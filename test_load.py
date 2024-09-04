@@ -9,12 +9,14 @@ model = vit_small(
     init_values=1.0,
     block_chunks=0
  )
-model.load_state_dict(torch.load('models/dinov2_vits14_pretrain.pth'))
+#model.load_state_dict(torch.load('models/dinov2_vits14_pretrain.pth'))
+restored_model = torch.load('models/dinov2_vits14_pretrain.pth', map_location="cpu")
 
-model.save_pretrained('pop')
+print(restored_model)
+#model.save_pretrained('pop')
 
 
-print(model)
+#print(model)
 #model = torch.hub.load('dinov2', 'dinov2_vits14', source='local', pretrained=False)
 #model = torch.hub.load("facebookresearch/dinov2", 'dinov2_vitl14', pretrained=True)
 #model.load_state_dict(torch.load('dinov2_vits14.pth'))
