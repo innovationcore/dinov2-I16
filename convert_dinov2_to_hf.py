@@ -194,7 +194,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
     else:
         model = Dinov2Model(config).eval()
         #model.load_state_dict(state_dict)
-        model.load_state_dict(torch.load('teacher_checkpoint.pth'))
+        state_dict = torch.load('teacher_checkpoint.pth', map_location="cpu")
+        model.load_state_dict(state_dict)
 
     # load image
     image = prepare_img()
