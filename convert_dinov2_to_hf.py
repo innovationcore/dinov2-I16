@@ -160,10 +160,20 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
 
     # load original model from torch hub
     original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+
+    pretrained_weights = 'teacher_checkpoint.pth'
+    state_dict = torch.load(pretrained_weights, map_location="cpu")
+    state_dict = state_dict['teacher']
+
+    # only the backbone keys
+    state_dict = {key: value for key, value in state_dict.items() if 'backbone' in key}
+    # remove 'backbone.' prefix
+    state_dict = {k.replace("backbone.", ""): v for k, v in state_dict.items()}
+
+    # load state_dict into the model
+    original_model.load_state_dict(state_dict)
+
     print(original_model)
-    restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
-    original_model.load_state_dict(restored_model)
-    exit(0)
     original_model.eval()
 
     # load state_dict of original model, remove and rename some keys
