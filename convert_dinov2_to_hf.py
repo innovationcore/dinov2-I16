@@ -33,6 +33,9 @@ from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from transformers.utils import logging
 
 import os
+
+from dinov2.models.vision_transformer import vit_large
+
 #do this due to CPU/GPU bug
 os.environ["XFORMERS_DISABLED"] = "1"
 #pretrained server containing cert was bad
@@ -170,10 +173,14 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
     # remove 'backbone.' prefix
     state_dict = {k.replace("backbone.", ""): v for k, v in state_dict.items()}
 
+    model = vit_large(patch_size=14)
     # load state_dict into the model
-    original_model.load_state_dict(state_dict)
+    model.load_state_dict(state_dict)
 
-    print(original_model)
+    print(model)
+    #restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
+    #original_model.load_state_dict(restored_model)
+    exit(0)
     original_model.eval()
 
     # load state_dict of original model, remove and rename some keys
