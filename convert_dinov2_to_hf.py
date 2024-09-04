@@ -160,6 +160,10 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
 
     # load original model from torch hub
     original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    print(original_model)
+    restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
+    original_model.load_state_dict(restored_model)
+    exit(0)
     original_model.eval()
 
     # load state_dict of original model, remove and rename some keys
@@ -194,11 +198,11 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
     else:
         model = Dinov2Model(config).eval()
         #model.load_state_dict(state_dict)
-        restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
-        print(type(restored_model))
-        print(restored_model)
-        exit(0)
-        state_dict = torch.load('teacher_checkpoint.pth', map_location="cpu")
+        #restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
+        #print(type(restored_model))
+        #print(restored_model)
+        #exit(0)
+        #state_dict = torch.load('teacher_checkpoint.pth', map_location="cpu")
         model.load_state_dict(state_dict)
 
     # load image

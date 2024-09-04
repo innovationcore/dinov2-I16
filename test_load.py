@@ -10,7 +10,7 @@ model = vit_small(
     block_chunks=0
  )
 #model.load_state_dict(torch.load('models/dinov2_vits14_pretrain.pth'))
-restored_model = torch.load('models/dinov2_vits14_pretrain.pth', map_location="cpu")
+restored_model = torch.load('teacher_checkpoint.pth', map_location="cpu")
 
 print(restored_model)
 #model.save_pretrained('pop')
