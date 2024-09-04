@@ -193,7 +193,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, hf_folder_pa
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
         model = Dinov2Model(config).eval()
-        model.load_state_dict(state_dict)
+        #model.load_state_dict(state_dict)
+        model.load_state_dict(torch.load('teacher_checkpoint.pth'))
 
     # load image
     image = prepare_img()
