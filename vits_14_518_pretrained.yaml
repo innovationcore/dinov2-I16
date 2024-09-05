@@ -65,7 +65,7 @@ train:
   saveckp_freq: 390
   seed: 0
   num_workers: 8
-  OFFICIAL_EPOCH_LENGTH: 840
+  OFFICIAL_EPOCH_LENGTH: 780
   cache_dataset: true
   centering: sinkhorn_knopp
 student:
