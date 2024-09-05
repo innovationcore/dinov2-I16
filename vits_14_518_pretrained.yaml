@@ -74,7 +74,7 @@ student:
   drop_path_rate: 0.4
   layerscale: 1.0e-05
   drop_path_uniform: true
-  pretrained_weights: 'pretrain/dinov2_vits14_pretrain.pth'
+  pretrained_weights: 'pretrained_weights/dinov2_vits14_pretrain.pth'
   ffn_layer: mlp
   block_chunks: 4
   qkv_bias: true
