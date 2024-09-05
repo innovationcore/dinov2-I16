@@ -94,7 +94,7 @@ optim:
   weight_decay: 0.04
   weight_decay_end: 0.2
   base_lr: 0.0002
-  lr: 0.0001
+  lr: 0.0002
   warmup_epochs: 1
   min_lr: 1.0e-06
   clip_grad: 3.0
