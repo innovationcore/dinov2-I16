@@ -1,4 +1,5 @@
 #https://colab.research.google.com/drive/1gHDOi8RL8hHmfAJvF7IqyBF7tmosG0ko#scrollTo=NDH3kjLASrXs
+#https://github.com/huggingface/transformers/pull/32905
 
 from transformers import AutoImageProcessor, AutoModel, AutoConfig
 from PIL import Image

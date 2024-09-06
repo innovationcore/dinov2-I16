@@ -162,7 +162,10 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
     config = get_dinov2_config(model_name, image_classifier=image_classifier)
 
     # load original model from torch hub
-    original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    original_model = torch.hub.load(
+        "facebookresearch/dinov2", model_name.replace("_1layer", "").replace("_reg4", "_reg")
+    )
 
     pretrained_weights = 'dino_vit_small.pth'
     state_dict = torch.load(pretrained_weights, map_location="cpu")
@@ -414,6 +417,7 @@ if __name__ == "__main__":
         type=str,
         choices=[
             "dinov2_vits14",
+            "dinov2_vits14_reg",
             "dinov2_vitb14",
             "dinov2_vitl14",
             "dinov2_vitg14",
