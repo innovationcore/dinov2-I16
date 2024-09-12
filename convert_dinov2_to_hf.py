@@ -31,6 +31,11 @@ from torchvision import transforms
 from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
 from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling
 from transformers.utils import logging
+from functools import partial
+from dinov2.models.vision_transformer import DinoVisionTransformer
+
+from dinov2.layers import MemEffAttention, NestedTensorBlock as Block
+
 
 import os
 
@@ -46,8 +51,28 @@ logging.set_verbosity_info()
 logger = logging.get_logger(__name__)
 
 
+def get_model(model_type):
+    model = None
+    if "vits" in model_type:
+        model = DinoVisionTransformer(
+            patch_size=16,
+            embed_dim=384,
+            depth=12,
+            num_heads=6,
+            mlp_ratio=4,
+            img_size=512,
+            ffn_bias=True,
+            ffn_layer='mlp',
+            block_fn=partial(Block, attn_class=MemEffAttention),
+            num_register_tokens=0,
+            init_values=1.0,
+            block_chunks=0,
+        )
+
+    return model
+
 def get_dinov2_config(model_name, image_classifier=False):
-    config = Dinov2Config(image_size=518, patch_size=14)
+    config = Dinov2Config(image_size=512, patch_size=16)
 
     # size of the architecture
     if "vits" in model_name:
@@ -162,10 +187,7 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
     config = get_dinov2_config(model_name, image_classifier=image_classifier)
 
     # load original model from torch hub
-    #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
-    original_model = torch.hub.load(
-        "facebookresearch/dinov2", model_name.replace("_1layer", "").replace("_reg4", "_reg")
-    )
+    original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
 
     pretrained_weights = 'dino_vit_small.pth'
     state_dict = torch.load(pretrained_weights, map_location="cpu")
@@ -301,11 +323,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     config = get_dinov2_config(model_name, image_classifier=image_classifier)
 
     # load original model from torch hub
-    original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
-    print("facebookresearch/dinov2")
-    print(model_name.replace("_1layer", ""))
-    print(original_model)
-    #original_model = torch.hub.load('pytorch/vision:v0.9.0', 'deeplabv3_resnet101', pretrained=True).eval()
+    #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    original_model= get_model('vits')
     original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
     #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
@@ -417,7 +436,6 @@ if __name__ == "__main__":
         type=str,
         choices=[
             "dinov2_vits14",
-            "dinov2_vits14_reg",
             "dinov2_vitb14",
             "dinov2_vitl14",
             "dinov2_vitg14",

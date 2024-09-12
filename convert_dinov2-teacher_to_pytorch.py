@@ -15,12 +15,12 @@ def get_model(model_type):
     model = None
     if "vits" in model_type:
         model = DinoVisionTransformer(
-            patch_size=14,
+            patch_size=16,
             embed_dim=384,
             depth=12,
             num_heads=6,
             mlp_ratio=4,
-            img_size=518,
+            img_size=512,
             ffn_bias=True,
             ffn_layer='mlp',
             block_fn=partial(Block, attn_class=MemEffAttention),

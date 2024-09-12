@@ -7,9 +7,10 @@ import requests
 
 #url = 'https://pic.imgdb.cn/item/666aadd5d9c307b7e956dccb.png'
 #image = Image.open(requests.get(url, stream=True).raw)
-file_path = 'example_dataset/ct_2.png'
+file_path = 'example_dataset/ct_1.png'
 image = Image.open(file_path)
-model_name = 'facebook/dinov2-large'
+#model_name = 'facebook/dinov2-large'
+model_name = 'models/vits_70e_hf'
 # facebook/dinov2-giant dinov2-large dinov2-base
 config = AutoConfig.from_pretrained(model_name)
 config.output_attentions = True
