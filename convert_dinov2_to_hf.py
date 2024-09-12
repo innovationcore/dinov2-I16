@@ -56,6 +56,7 @@ def get_model(model_type):
     if "vits" in model_type:
         model = DinoVisionTransformer(
             patch_size=16,
+            in_chans=1,
             embed_dim=384,
             depth=12,
             num_heads=6,
