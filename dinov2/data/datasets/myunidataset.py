@@ -65,6 +65,7 @@ class MyUniDataset(ExtendedVisionDataset):
         target = self.get_target(index)
         
         if self.transforms is not None:
+            logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
 
         num_channels = len(image.getbands())
