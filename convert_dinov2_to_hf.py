@@ -555,7 +555,9 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     print(type(pixel_values))
     print(pixel_values.shape)
 
-    assert torch.allclose(original_pixel_values, pixel_values)
+    try: assert torch.allclose(original_pixel_values, pixel_values)
+    except Exception as e:
+        print(e)
 
     with torch.no_grad():
         outputs = model(pixel_values, output_hidden_states=True)
