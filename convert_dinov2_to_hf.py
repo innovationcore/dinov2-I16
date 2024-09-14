@@ -393,6 +393,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     transformations = transforms.Compose(
         [
             transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.RandomCrop(config.image_size),
             transforms.ToTensor(),
         ]
     )
