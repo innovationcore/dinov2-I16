@@ -21,6 +21,7 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import requests
 import torch
 import torch.nn as nn
@@ -520,7 +521,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     # load image
     image = prepare_img(config)
     image = asarray(image)
-    image = image.unsqueeze(1)
+    image = np.expand_dims(image, axis=-1)
 
     transformations = transforms.Compose(
         [
