@@ -204,7 +204,8 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
     original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
 
     pretrained_weights = 'dino_vit_small.pth'
-    state_dict = torch.load(pretrained_weights, map_location="cpu")
+    #state_dict = torch.load(pretrained_weights, map_location="cpu")
+    state_dict = torch.load(pretrained_weights)
     #state_dict = state_dict['teacher']
 
     # only the backbone keys
@@ -248,7 +249,7 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
@@ -339,7 +340,9 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
     # load original model from torch hub
     #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
     original_model= get_model('vits')
-    original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
+    #original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
+    original_model.load_state_dict(torch.load('dino_vit_small.pth'))
+
     #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
 
@@ -369,7 +372,7 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
@@ -480,7 +483,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     # load original model from torch hub
     #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
     original_model= get_model('vits')
-    original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
+    original_model.load_state_dict(torch.load('dino_vit_small.pth'))
     #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
 
@@ -510,7 +513,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
