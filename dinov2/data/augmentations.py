@@ -88,7 +88,7 @@ class DataAugmentationDINO(object):
         # normalization
         self.normalize = transforms.Compose(
             [
-                #transforms.ToTensor(),
+                transforms.ToTensor(),
                 make_normalize_transform(),
             ]
         )
