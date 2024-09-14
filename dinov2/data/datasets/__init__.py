@@ -7,4 +7,3 @@ from .image_net import ImageNet
 from .image_net_22k import ImageNet22k
 from .mydataset import MyDataset
 from .myunidataset import MyUniDataset
-
