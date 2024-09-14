@@ -48,7 +48,7 @@ class DataAugmentationDINO(object):
                 ),
                 #transforms.RandomCrop(global_crops_size),
                 transforms.RandomHorizontalFlip(p=0.5),
-                RandomRotate90(p=1),
+                #RandomRotate90(p=1),
             ]
         )
 
@@ -59,7 +59,7 @@ class DataAugmentationDINO(object):
                 ),
                 #transforms.RandomCrop(local_crops_size),
                 transforms.RandomHorizontalFlip(p=0.5),
-                RandomRotate90(p=1),
+                #RandomRotate90(p=1),
             ]
         )
 
