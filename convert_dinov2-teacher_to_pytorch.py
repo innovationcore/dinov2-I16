@@ -84,8 +84,8 @@ def main(teacher_checkpoint_path, dump_path_vit_model):
     for key in hf_model_dict_keys.intersection(renamed_keys):
         if hf_model_dict[key].shape != reshaped_teacher_dict[key].shape:
             shape_mismatch_keys.append((key, hf_model_dict[key].shape, reshaped_teacher_dict[key].shape))
-        else:
-            print('key:', key, 'shape:', str(hf_model_dict[key].shape))
+        #else:
+        #    print('key:', key, 'shape:', str(hf_model_dict[key].shape))
 
     if shape_mismatch_keys:
         print('Shape mismatch found in the following keys:')
