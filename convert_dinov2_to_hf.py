@@ -46,7 +46,7 @@ import os
 from dinov2.models.vision_transformer import vit_large
 
 #do this due to CPU/GPU bug
-os.environ["XFORMERS_DISABLED"] = "1"
+#os.environ["XFORMERS_DISABLED"] = "1"
 #pretrained server containing cert was bad
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
