@@ -27,7 +27,7 @@ class MyUniDataset(ExtendedVisionDataset):
         img = self.remove_transparency(img).convert('L')
         logger.info("1 img type: " + str(type(img)))
         logger.info("1 Number of channels: " + str(num_channels))
-        exit(0)
+        #exit(0)
         return img
         
     def get_target(self, index: int) -> Any:
