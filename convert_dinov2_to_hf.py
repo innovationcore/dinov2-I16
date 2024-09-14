@@ -73,7 +73,7 @@ def get_model(model_type):
     return model
 
 def get_dinov2_config(model_name, image_classifier=False):
-    config = Dinov2Config(image_size=512, patch_size=16)
+    config = Dinov2Config(image_size=512, patch_size=16, in_chans=3)
 
     # size of the architecture
     if "vits" in model_name:

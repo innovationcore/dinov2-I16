@@ -59,6 +59,8 @@ class PatchEmbed(nn.Module):
         self.num_patches = patch_grid_size[0] * patch_grid_size[1]
 
         self.in_chans = in_chans
+        print('patch_embed in_chans:', in_chans)
+        exit(0)
         self.embed_dim = embed_dim
 
         self.flatten_embedding = flatten_embedding
