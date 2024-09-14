@@ -177,7 +177,14 @@ def prepare_img(config):
         image = Image.open(requests.get(url, stream=True).raw).convert("L")
     else:
         image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+
+    num_channels = len(image.getbands())
+    print('num_channels:', num_channels)
+    print('img mode:', image.mode)
+
     return image
+
+
 
 @torch.no_grad()
 def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_path, push_to_hub=False):
