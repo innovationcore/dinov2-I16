@@ -26,6 +26,7 @@ import torch
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from PIL import Image
+from numpy import asarray
 from torchvision import transforms
 
 from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
@@ -528,7 +529,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     )
 
     #image = to_channel_dimension_format(image, ChannelDimension.FIRST)
-    e = infer_channel_dimension_format(image, 1)
+    e = infer_channel_dimension_format(asarray(image), 1)
     print(e)
 
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
