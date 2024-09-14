@@ -323,7 +323,7 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
         processor.push_to_hub(f"facebook/{name}")
 
 @torch.no_grad()
-def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=False):
+def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub=False):
     """
     Copy/paste/tweak model's weights to our DINOv2 structure.
     """
@@ -372,6 +372,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         model = Dinov2Model(config).eval()
         model.load_state_dict(state_dict)
 
+
     # load image
     image = prepare_img(config)
 
@@ -413,7 +414,6 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         do_center_crop=True,
         crop_size=config.image_size,
         do_convert_rgb=False,
-        input_data_format=1,
     )
 
     pixel_values = processor(image, return_tensors="pt").pixel_values
@@ -423,7 +423,6 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     print(type(pixel_values))
     print(pixel_values.shape)
 
-    exit(0)
 
     assert torch.allclose(original_pixel_values, pixel_values)
 
@@ -463,6 +462,46 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         name = model_name_to_hf_name[model_name]
         model.push_to_hub(f"facebook/{name}")
         processor.push_to_hub(f"facebook/{name}")
+
+
+@torch.no_grad()
+def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=False):
+    """
+    Copy/paste/tweak model's weights to our DINOv2 structure.
+    """
+
+    # define default Dinov2 configuration
+    image_classifier = "1layer" in model_name
+    config = get_dinov2_config(model_name, image_classifier=image_classifier)
+
+    # load original model from torch hub
+    original_model = get_model('vits')
+    original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
+    original_model.eval()
+
+    # load state_dict of original model, remove and rename some keys
+    state_dict = original_model.state_dict()
+    rename_keys = create_rename_keys(config)
+    for src, dest in rename_keys:
+        rename_key(state_dict, src, dest)
+    read_in_q_k_v(state_dict, config)
+
+    for key, val in state_dict.copy().items():
+        val = state_dict.pop(key)
+        if "w12" in key:
+            key = key.replace("w12", "weights_in")
+        if "w3" in key:
+            key = key.replace("w3", "weights_out")
+        state_dict[key] = val
+
+    model = Dinov2Model(config).eval()
+    model.load_state_dict(state_dict)
+
+    if pytorch_dump_folder_path is not None:
+        Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
+        print(f"Saving model {model_name} to {pytorch_dump_folder_path}")
+        model.save_pretrained(pytorch_dump_folder_path)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
