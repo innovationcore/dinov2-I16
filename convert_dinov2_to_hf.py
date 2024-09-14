@@ -171,11 +171,13 @@ def read_in_q_k_v(state_dict, config):
 
 
 # We will verify our results on an image of cute cats
-def prepare_img():
+def prepare_img(config):
     url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-    image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
+    if config.num_channels == 1:
+        image = Image.open(requests.get(url, stream=True).raw).convert("L")
+    else:
+        image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
     return image
-
 
 @torch.no_grad()
 def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_path, push_to_hub=False):
@@ -360,13 +362,11 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
-        print('config:', config)
-        print('config num_channels:', config.num_channels)
         model = Dinov2Model(config).eval()
         model.load_state_dict(state_dict)
 
     # load image
-    image = prepare_img()
+    image = prepare_img(config)
 
     # preprocess image
     transformations = transforms.Compose(
