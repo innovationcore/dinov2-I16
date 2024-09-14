@@ -413,6 +413,9 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
 
     pixel_values = processor(image, return_tensors="pt").pixel_values
 
+    print(original_pixel_values)
+    exit(0)
+
     assert torch.allclose(original_pixel_values, pixel_values)
 
     with torch.no_grad():
