@@ -22,12 +22,18 @@ class MyUniDataset(ExtendedVisionDataset):
         image_path = self.image_paths[index]
         img = Image.open(image_path).convert("RGB")
         num_channels = len(img.getbands())
+        width, height = img.size
         logger.info("0 img type: " + str(type(img)))
+        logger.info("0 Width: " + str(width))
+        logger.info("0 Height: " + str(height))
         logger.info("0 image mode: " + str(img.mode))
         logger.info("0 Number of channels: " + str(num_channels))
         img = self.remove_transparency(img).convert('L')
+        width, height = img.size
         num_channels = len(img.getbands())
         logger.info("1 img type: " + str(type(img)))
+        logger.info("1 Width: " + str(width))
+        logger.info("1 Height: " + str(height))
         logger.info("1 image mode: " + str(img.mode))
         logger.info("1 Number of channels: " + str(num_channels))
         #exit(0)
@@ -63,15 +69,19 @@ class MyUniDataset(ExtendedVisionDataset):
         except Exception as e:
             raise RuntimeError(f"can not read image for sample {index}") from e
         target = self.get_target(index)
-        
+
+        width, height = image.size
+        logger.info("2 img type: " + str(type(image)))
+        logger.info("2 Width: " + str(width))
+        logger.info("2 Height: " + str(height))
+        logger.info("2 image mode: " + str(image.mode))
+
         if self.transforms is not None:
             logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
 
-        num_channels = len(image.getbands())
-        logger.info("2 img type: " + str(type(image)))
-        logger.info("2 image mode: " + str(image.mode))
-        logger.info("2 Number of channels: " + str(num_channels))
+        logger.info("3 img type: " + str(type(image)))
+        logger.info("3 image mode: " + str(image.mode))
 
         return image, target
     
