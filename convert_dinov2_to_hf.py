@@ -360,6 +360,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
+        print('config:', config)
         model = Dinov2Model(config).eval()
         model.load_state_dict(state_dict)
 
