@@ -29,7 +29,7 @@ from PIL import Image
 from torchvision import transforms
 
 from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
-from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling
+from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling, ChannelDimension
 from transformers.utils import logging
 from functools import partial
 from dinov2.models.vision_transformer import DinoVisionTransformer
@@ -534,9 +534,13 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         image_mean=0.5,
         image_std=0.5,
         do_convert_rgb=False,
+        data_format=ChannelDimension.FIRST,
+        input_data_format=ChannelDimension.FIRST,
     )
 
-    pixel_values = processor(image, return_tensors="pt", in_channels=1).pixel_values
+
+
+    pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
 
     print(type(original_pixel_values))
     print(original_pixel_values.shape)
