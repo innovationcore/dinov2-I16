@@ -399,12 +399,16 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
 
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
+    '''
     processor = BitImageProcessor(
         size={"shortest_edge": 256},
         resample=PILImageResampling.BICUBIC,
         image_mean=IMAGENET_DEFAULT_MEAN,
         image_std=IMAGENET_DEFAULT_STD,
     )
+    '''
+    processor = BitImageProcessor()
+
     pixel_values = processor(image, return_tensors="pt").pixel_values
 
     assert torch.allclose(original_pixel_values, pixel_values)
