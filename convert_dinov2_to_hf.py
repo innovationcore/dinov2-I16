@@ -529,6 +529,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     )
 
     #image = to_channel_dimension_format(image, ChannelDimension.FIRST)
+    print(asarray(image).ndim)
     e = infer_channel_dimension_format(asarray(image), 1)
     print(e)
     exit(0)
