@@ -10,7 +10,8 @@ from typing import Any, Callable, List, Optional, TypeVar
 import torch
 from torch.utils.data import Sampler
 
-from .datasets import ImageNet, ImageNet22k, MyDataset
+from .datasets import ImageNet, ImageNet22k, MyDataset, MyUniDataset
+from .datasets.myunidataset import MyUniDataset
 from .samplers import EpochSampler, InfiniteSampler, ShardedInfiniteSampler
 
 
@@ -60,6 +61,8 @@ def _parse_dataset_str(dataset_str: str):
         class_ = ImageNet22k
     elif name == "MyDataset":
         class_ = MyDataset
+    elif name == "MyUniDataset":
+        class_ = MyUniDataset
     else:
         raise ValueError(f'Unsupported dataset "{name}"')
 
