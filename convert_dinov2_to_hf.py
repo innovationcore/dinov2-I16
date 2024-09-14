@@ -520,8 +520,6 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
 
     # load image
     image = prepare_img(config)
-    image = asarray(image)
-    image = np.expand_dims(image, axis=-1)
 
     transformations = transforms.Compose(
         [
@@ -530,12 +528,6 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
             transforms.ToTensor(),
         ]
     )
-
-    #image = to_channel_dimension_format(image, ChannelDimension.FIRST)
-
-    print(asarray(image).ndim)
-    e = infer_channel_dimension_format(asarray(image), 1)
-    print(e)
 
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
@@ -547,6 +539,9 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         #image_std=0.5,
         do_convert_rgb=False,
     )
+
+    image = asarray(image)
+    image = np.expand_dims(image, axis=-1)
 
     #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.LAST, input_data_format=ChannelDimension.LAST).pixel_values
     #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
