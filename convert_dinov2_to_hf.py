@@ -532,7 +532,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
     processor = BitImageProcessor(
-        size={'shortest_edge': config.image_size},
+        #size={'shortest_edge': config.image_size},
+        size={'height': config.image_size, 'width': config.image_size},
         #do_center_crop=True,
         crop_size={'shortest_edge': config.image_size},
         #image_mean=0.5,
