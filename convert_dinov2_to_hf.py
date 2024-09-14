@@ -30,7 +30,8 @@ from torchvision import transforms
 
 from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
 from transformers.image_transforms import to_channel_dimension_format
-from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling, ChannelDimension
+from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling, ChannelDimension, \
+    infer_channel_dimension_format
 from transformers.utils import logging
 from functools import partial
 from dinov2.models.vision_transformer import DinoVisionTransformer
@@ -527,6 +528,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     )
 
     #image = to_channel_dimension_format(image, ChannelDimension.FIRST)
+    e = infer_channel_dimension_format(image, 1)
+    print(e)
 
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
