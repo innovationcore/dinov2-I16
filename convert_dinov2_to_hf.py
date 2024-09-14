@@ -381,10 +381,10 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
             transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            transforms.Normalize(
-                mean=IMAGENET_DEFAULT_MEAN,  # these are RGB mean+std values
-                std=IMAGENET_DEFAULT_STD,  # across a large photo dataset.
-            ),
+            #transforms.Normalize(
+            #    mean=IMAGENET_DEFAULT_MEAN,  # these are RGB mean+std values
+            #    std=IMAGENET_DEFAULT_STD,  # across a large photo dataset.
+            #),
         ]
     )
 
