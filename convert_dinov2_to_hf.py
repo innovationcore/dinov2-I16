@@ -544,8 +544,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         num_channels=1,
     )
 
-    image = asarray(image)
-    image = np.expand_dims(image, axis=-1)
+    #image = asarray(image)
+    #image = np.expand_dims(image, axis=-1)
 
     #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.LAST, input_data_format=ChannelDimension.LAST).pixel_values
     #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
@@ -555,7 +555,6 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     print(original_pixel_values.shape)
     print(type(pixel_values))
     print(pixel_values.shape)
-
 
     assert torch.allclose(original_pixel_values, pixel_values)
 
