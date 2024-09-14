@@ -538,6 +538,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         #image_mean=0.5,
         #image_std=0.5,
         do_convert_rgb=False,
+        do_normalize=False,
     )
 
     image = asarray(image)
