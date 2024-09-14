@@ -409,7 +409,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     )
     '''
     processor = BitImageProcessor(
-        size={"shortest_edge": config.image_size},
+        size=config.image_size,
     )
 
     pixel_values = processor(image, return_tensors="pt").pixel_values
