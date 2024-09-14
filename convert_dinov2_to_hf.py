@@ -412,12 +412,14 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         size=config.image_size,
         do_center_crop=True,
         crop_size=config.image_size,
-        do_convert_rgb=False,
+        do_convert_rgb=True,
     )
 
     pixel_values = processor(image, return_tensors="pt").pixel_values
 
+    print(type(original_pixel_values))
     print(original_pixel_values.shape)
+    print(type(pixel_values))
     print(pixel_values.shape)
 
     exit(0)
