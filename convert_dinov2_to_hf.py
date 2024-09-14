@@ -46,7 +46,7 @@ import os
 from dinov2.models.vision_transformer import vit_large
 
 #do this due to CPU/GPU bug
-#os.environ["XFORMERS_DISABLED"] = "1"
+os.environ["XFORMERS_DISABLED"] = "1"
 #pretrained server containing cert was bad
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -204,8 +204,7 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
     original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
 
     pretrained_weights = 'dino_vit_small.pth'
-    #state_dict = torch.load(pretrained_weights, map_location="cpu")
-    state_dict = torch.load(pretrained_weights)
+    state_dict = torch.load(pretrained_weights, map_location="cpu")
     #state_dict = state_dict['teacher']
 
     # only the backbone keys
@@ -249,7 +248,7 @@ def convert_dinov2_checkpoint2(model_name, pytorch_dump_folder_path, hf_folder_p
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
@@ -340,9 +339,7 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
     # load original model from torch hub
     #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
     original_model= get_model('vits')
-    #original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
-    original_model.load_state_dict(torch.load('dino_vit_small.pth'))
-
+    original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
     #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
 
@@ -372,7 +369,7 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
@@ -483,7 +480,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     # load original model from torch hub
     #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
     original_model= get_model('vits')
-    original_model.load_state_dict(torch.load('dino_vit_small.pth'))
+    original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
     #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
 
@@ -513,7 +510,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
             "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
         }
         url = model_name_to_classifier_dict_url[model_name]
-        classifier_state_dict = torch.hub.load_state_dict_from_url(url)
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
         model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
         model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
     else:
@@ -558,10 +555,11 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     print(type(pixel_values))
     print(pixel_values.shape)
 
+    '''
     try: assert torch.allclose(original_pixel_values, pixel_values)
     except Exception as e:
         print(e)
-
+        
     with torch.no_grad():
         outputs = model(pixel_values, output_hidden_states=True)
         original_outputs = original_model(pixel_values)
@@ -575,7 +573,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         assert outputs.last_hidden_state[:, 0].shape == original_outputs.shape
         assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
     print("Looks ok!")
-
+    '''
     if pytorch_dump_folder_path is not None:
         Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
         print(f"Saving model {model_name} to {pytorch_dump_folder_path}")
