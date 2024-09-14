@@ -29,6 +29,7 @@ from PIL import Image
 from torchvision import transforms
 
 from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
+from transformers.image_transforms import to_channel_dimension_format
 from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling, ChannelDimension
 from transformers.utils import logging
 from functools import partial
@@ -525,6 +526,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         ]
     )
 
+    #image = to_channel_dimension_format(image, ChannelDimension.FIRST)
+
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
     processor = BitImageProcessor(
@@ -534,14 +537,13 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         image_mean=0.5,
         image_std=0.5,
         do_convert_rgb=False,
-        data_format=ChannelDimension.FIRST,
-        input_data_format=ChannelDimension.FIRST,
     )
 
 
 
-    #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
-    pixel_values = processor(image, return_tensors="pt").pixel_values
+    pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.LAST, input_data_format=ChannelDimension.LAST).pixel_values
+    # pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
+    #pixel_values = processor(image, return_tensors="pt").pixel_values
 
     print(type(original_pixel_values))
     print(original_pixel_values.shape)
