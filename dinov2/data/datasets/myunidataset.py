@@ -33,7 +33,7 @@ class MyUniDataset(ExtendedVisionDataset):
     def get_target(self, index: int) -> Any:
         return 0
 
-    def remove_transparency(im, bg_colour=(255, 255, 255)):
+    def remove_transparency(self, im, bg_colour=(255, 255, 255)):
 
         # Only process if image has transparency
         if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
