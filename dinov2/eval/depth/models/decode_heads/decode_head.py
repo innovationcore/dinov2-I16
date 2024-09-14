@@ -105,7 +105,7 @@ class DepthBaseDecodeHead(BaseModule, metaclass=ABCMeta):
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 
-        logger.info('decode_head.py in_chans:', in_channels)
+        logger.info('decode_head.py in_chans: '+ str(in_channels))
 
     def extra_repr(self):
         """Extra repr."""
