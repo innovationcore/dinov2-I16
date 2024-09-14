@@ -26,6 +26,7 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("0 image mode: " + str(img.mode))
         logger.info("0 Number of channels: " + str(num_channels))
         img = self.remove_transparency(img).convert('L')
+        num_channels = len(img.getbands())
         logger.info("1 img type: " + str(type(img)))
         logger.info("1 image mode: " + str(img.mode))
         logger.info("1 Number of channels: " + str(num_channels))
@@ -65,6 +66,11 @@ class MyUniDataset(ExtendedVisionDataset):
         
         if self.transforms is not None:
             image, target = self.transforms(image, target)
+
+        num_channels = len(image.getbands())
+        logger.info("2 img type: " + str(type(image)))
+        logger.info("2 image mode: " + str(image.mode))
+        logger.info("2 Number of channels: " + str(num_channels))
 
         return image, target
     
