@@ -12,9 +12,12 @@ import torch
 import torch.nn as nn
 from mmcv.runner import BaseModule, auto_fp16, force_fp32
 
+import logging
+
 from ...ops import resize
 from ..builder import build_loss
 
+logger = logging.getLogger("dinov2")
 
 class DepthBaseDecodeHead(BaseModule, metaclass=ABCMeta):
     """Base class for BaseDecodeHead.
@@ -102,7 +105,7 @@ class DepthBaseDecodeHead(BaseModule, metaclass=ABCMeta):
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 
-        print('decode_head.py in_chans:', in_channels)
+        logger.info('decode_head.py in_chans:', in_channels)
 
     def extra_repr(self):
         """Extra repr."""

@@ -121,7 +121,7 @@ class PatchEmbed(nn.Module):
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size, bias=bias)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
-        print('PatchEmbed vit.py in_chans:', in_chans)
+        logging.info('PatchEmbed vit.py in_chans:', in_chans)
 
     def forward(self, x):
         x = self.proj(x)
@@ -503,7 +503,7 @@ class TIMMVisionTransformer(BaseModule):
             self.norm_pre = nn.Identity()
         self.init_weights(pretrained)
 
-        print('TIMMVisionTransformer vit.py in_chans:', in_chans)
+        logging.info('TIMMVisionTransformer vit.py in_chans:', in_chans)
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):

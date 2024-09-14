@@ -2,7 +2,7 @@
 #
 # This source code is licensed under the Apache License, Version 2.0
 # found in the LICENSE file in the root directory of this source tree.
-
+import logging
 # References:
 #   https://github.com/facebookresearch/dino/blob/master/vision_transformer.py
 #   https://github.com/rwightman/pytorch-image-models/tree/master/timm/layers/patch_embed.py
@@ -12,6 +12,7 @@ from typing import Callable, Optional, Tuple, Union
 from torch import Tensor
 import torch.nn as nn
 
+logger = logging.getLogger("dinov2")
 
 def make_2tuple(x):
     if isinstance(x, tuple):
@@ -66,7 +67,7 @@ class PatchEmbed(nn.Module):
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_HW, stride=patch_HW)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
-        print('patch_embed.py in_chans:', in_chans)
+        logging.info('patch_embed.py in_chans:', in_chans)
 
     def forward(self, x: Tensor) -> Tensor:
         _, _, H, W = x.shape

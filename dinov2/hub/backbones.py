@@ -10,6 +10,10 @@ import torch
 
 from .utils import _DINOV2_BASE_URL, _make_dinov2_model_name
 
+import logging
+
+logger = logging.getLogger("dinov2")
+
 
 class Weights(Enum):
     LVD142M = "LVD142M"
@@ -60,7 +64,7 @@ def _make_dinov2_model(
         state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
         model.load_state_dict(state_dict, strict=True)
 
-    print('backbones.py in_chans', in_chans)
+    logger.info('backbones.py in_chans', in_chans)
 
     return model
 
