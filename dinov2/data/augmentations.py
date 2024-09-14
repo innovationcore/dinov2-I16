@@ -49,7 +49,7 @@ class DataAugmentationDINO(object):
                 #transforms.RandomCrop(global_crops_size),
                 transforms.Resize(global_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
                 transforms.RandomHorizontalFlip(p=0.5),
-                RandomRotate90(p=1),
+                #RandomRotate90(p=1),
             ]
         )
 
@@ -61,7 +61,7 @@ class DataAugmentationDINO(object):
                 #transforms.RandomCrop(local_crops_size),
                 transforms.Resize(local_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
                 transforms.RandomHorizontalFlip(p=0.5),
-                RandomRotate90(p=1),
+                #RandomRotate90(p=1),
             ]
         )
 
@@ -90,7 +90,7 @@ class DataAugmentationDINO(object):
         # normalization
         self.normalize = transforms.Compose(
             [
-                #transforms.ToTensor(),
+                transforms.ToTensor(),
                 make_normalize_transform(),
             ]
         )
@@ -98,9 +98,12 @@ class DataAugmentationDINO(object):
         #self.global_transfo1 = transforms.Compose([color_jittering, global_transfo1_extra, self.normalize])
         #self.global_transfo2 = transforms.Compose([color_jittering, global_transfo2_extra, self.normalize])
         #self.local_transfo = transforms.Compose([color_jittering, local_transfo_extra, self.normalize])
-        self.global_transfo1 = transforms.Compose([global_transfo1_extra])
-        self.global_transfo2 = transforms.Compose([global_transfo2_extra])
-        self.local_transfo = transforms.Compose([local_transfo_extra])
+        #self.global_transfo1 = transforms.Compose([global_transfo1_extra])
+        #self.global_transfo2 = transforms.Compose([global_transfo2_extra])
+        #self.local_transfo = transforms.Compose([local_transfo_extra])
+        self.global_transfo1 = transforms.Compose([global_transfo1_extra, self.normalize])
+        self.global_transfo2 = transforms.Compose([global_transfo2_extra, self.normalize])
+        self.local_transfo = transforms.Compose([local_transfo_extra, self.normalize])
 
     def __call__(self, image):
         output = {}
