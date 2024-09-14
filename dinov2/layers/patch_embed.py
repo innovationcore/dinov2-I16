@@ -59,14 +59,14 @@ class PatchEmbed(nn.Module):
         self.num_patches = patch_grid_size[0] * patch_grid_size[1]
 
         self.in_chans = in_chans
-        print('patch_embed in_chans:', in_chans)
-        exit(0)
         self.embed_dim = embed_dim
 
         self.flatten_embedding = flatten_embedding
 
         self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_HW, stride=patch_HW)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+
+        print('patch_embed.py in_chans:', in_chans)
 
     def forward(self, x: Tensor) -> Tensor:
         _, _, H, W = x.shape

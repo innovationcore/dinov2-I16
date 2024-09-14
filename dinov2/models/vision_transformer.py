@@ -104,6 +104,8 @@ class DinoVisionTransformer(nn.Module):
         self.interpolate_antialias = interpolate_antialias
         self.interpolate_offset = interpolate_offset
 
+        print('DinoVisionTransformer self.patch_embed dinov2_models_vision_transformer in_chans', in_chans)
+
         self.patch_embed = embed_layer(img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim)
         num_patches = self.patch_embed.num_patches
 
@@ -169,6 +171,8 @@ class DinoVisionTransformer(nn.Module):
         self.mask_token = nn.Parameter(torch.zeros(1, embed_dim))
 
         self.init_weights()
+
+        print('DinoVisionTransformer dinov2_models_vision_transformer in_chans', in_chans)
 
     def init_weights(self):
         trunc_normal_(self.pos_embed, std=0.02)
