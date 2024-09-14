@@ -463,7 +463,6 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
         model.push_to_hub(f"facebook/{name}")
         processor.push_to_hub(f"facebook/{name}")
 
-
 @torch.no_grad()
 def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=False):
     """
@@ -475,8 +474,10 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     config = get_dinov2_config(model_name, image_classifier=image_classifier)
 
     # load original model from torch hub
-    original_model = get_model('vits')
+    #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    original_model= get_model('vits')
     original_model.load_state_dict(torch.load('dino_vit_small.pth', map_location="cpu"))
+    #original_model = torch.hub.load('dino_vit_small.pth')
     original_model.eval()
 
     # load state_dict of original model, remove and rename some keys
@@ -494,13 +495,94 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
             key = key.replace("w3", "weights_out")
         state_dict[key] = val
 
-    model = Dinov2Model(config).eval()
-    model.load_state_dict(state_dict)
+    # load HuggingFace model
+    if image_classifier:
+        model = Dinov2ForImageClassification(config).eval()
+        model.dinov2.load_state_dict(state_dict)
+        model_name_to_classifier_dict_url = {
+            "dinov2_vits14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_linear_head.pth",
+            "dinov2_vitb14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_linear_head.pth",
+            "dinov2_vitl14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_linear_head.pth",
+            "dinov2_vitg14_1layer": "https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_linear_head.pth",
+        }
+        url = model_name_to_classifier_dict_url[model_name]
+        classifier_state_dict = torch.hub.load_state_dict_from_url(url, map_location="cpu")
+        model.classifier.weight = nn.Parameter(classifier_state_dict["weight"])
+        model.classifier.bias = nn.Parameter(classifier_state_dict["bias"])
+    else:
+        model = Dinov2Model(config).eval()
+        model.load_state_dict(state_dict)
+
+
+    # load image
+    image = prepare_img(config)
+
+    transformations = transforms.Compose(
+        [
+            transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.RandomCrop(config.image_size),
+            transforms.ToTensor(),
+        ]
+    )
+
+    original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
+
+    processor = BitImageProcessor(
+        size=config.image_size,
+        do_center_crop=True,
+        crop_size=config.image_size,
+        image_mean=0.5,
+        image_std=0.5,
+        do_convert_rgb=False,
+    )
+
+    pixel_values = processor(image, return_tensors="pt").pixel_values
+
+    print(type(original_pixel_values))
+    print(original_pixel_values.shape)
+    print(type(pixel_values))
+    print(pixel_values.shape)
+
+
+    assert torch.allclose(original_pixel_values, pixel_values)
+
+    with torch.no_grad():
+        outputs = model(pixel_values, output_hidden_states=True)
+        original_outputs = original_model(pixel_values)
+
+    # assert values
+    if image_classifier:
+        print("Predicted class:")
+        class_idx = outputs.logits.argmax(-1).item()
+        print(model.config.id2label[class_idx])
+    else:
+        assert outputs.last_hidden_state[:, 0].shape == original_outputs.shape
+        assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
+    print("Looks ok!")
 
     if pytorch_dump_folder_path is not None:
         Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
         print(f"Saving model {model_name} to {pytorch_dump_folder_path}")
         model.save_pretrained(pytorch_dump_folder_path)
+        print(f"Saving image processor to {pytorch_dump_folder_path}")
+        processor.save_pretrained(pytorch_dump_folder_path)
+
+    if push_to_hub:
+        model_name_to_hf_name = {
+            "dinov2_vits14": "dinov2-small",
+            "dinov2_vitb14": "dinov2-base",
+            "dinov2_vitl14": "dinov2-large",
+            "dinov2_vitg14": "dinov2-giant",
+            "dinov2_vits14_1layer": "dinov2-small-imagenet1k-1-layer",
+            "dinov2_vitb14_1layer": "dinov2-base-imagenet1k-1-layer",
+            "dinov2_vitl14_1layer": "dinov2-large-imagenet1k-1-layer",
+            "dinov2_vitg14_1layer": "dinov2-giant-imagenet1k-1-layer",
+        }
+
+        name = model_name_to_hf_name[model_name]
+        model.push_to_hub(f"facebook/{name}")
+        processor.push_to_hub(f"facebook/{name}")
+
 
 
 if __name__ == "__main__":
