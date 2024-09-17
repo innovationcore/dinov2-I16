@@ -1,41 +1,22 @@
-import glob
 import logging
-import os
 from enum import Enum
 from typing import Any, Dict, List, Tuple, Callable, Optional
-
-import numpy as np
 from PIL import Image
 from fastai.vision.all import Path, get_image_files, verify_images
-import tqdm
+
 from dinov2.data.datasets.extended import ExtendedVisionDataset
-import torchvision.transforms as transforms
-from functools import partial
 
 logger = logging.getLogger("dinov2")
 class MyUniDataset(ExtendedVisionDataset):
-    def __init__(self, data_folder: str, verify: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
-        super().__init__(data_folder, transforms, transform, target_transform)
-        self.root = Path(data_folder).expanduser()
+    def __init__(self, root: str, verify: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
+        super().__init__(root, transforms, transform, target_transform)
+
+        self.root = Path(root).expanduser()
         image_paths = get_image_files(self.root)
         invalid_images = set()
         if verify:
             invalid_images = set(verify_images(image_paths))
         self.image_paths = [p for p in image_paths if p not in invalid_images]
-
-        self.data_folder = data_folder
-        self.paths = []
-        self.samples = self.prepare_samples()
-        print('NUM SAMPLES:', len(self.samples))
-
-        resize_dim = 512
-
-        self.transform = transforms.Compose([
-            transforms.Resize((resize_dim, resize_dim)),
-            transforms.ToTensor()
-        ])
-
-        self.nii_to_tensor = partial(self.nii_img_to_tensor, transform=self.transform)
 
     def get_image_data(self, index: int) -> bytes:
         image_path = self.image_paths[index]
@@ -80,7 +61,7 @@ class MyUniDataset(ExtendedVisionDataset):
             return im
 
     def __len__(self) -> int:
-        return len(self.samples)
+        return len(self.image_paths)
     
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         try:
@@ -103,3 +84,4 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("3 img : " + str(image))
 
         return image, target
+    
