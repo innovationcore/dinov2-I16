@@ -22,11 +22,11 @@ class MyUniDataset(ExtendedVisionDataset):
         img = Image.open(image_path)
         num_channels = len(img.getbands())
         width, height = img.size
-        logger.info("0 img type: " + str(type(img)))
-        logger.info("0 Width: " + str(width))
-        logger.info("0 Height: " + str(height))
-        logger.info("0 image mode: " + str(img.mode))
-        logger.info("0 Number of channels: " + str(num_channels))
+        #logger.info("0 img type: " + str(type(img)))
+        #logger.info("0 Width: " + str(width))
+        #logger.info("0 Height: " + str(height))
+        #logger.info("0 image mode: " + str(img.mode))
+        #logger.info("0 Number of channels: " + str(num_channels))
 
         return img
         
@@ -44,17 +44,17 @@ class MyUniDataset(ExtendedVisionDataset):
         target = self.get_target(index)
 
         width, height = image.size
-        logger.info("2 img type: " + str(type(image)))
-        logger.info("2 Width: " + str(width))
-        logger.info("2 Height: " + str(height))
-        logger.info("2 image mode: " + str(image.mode))
+        #logger.info("2 img type: " + str(type(image)))
+        #logger.info("2 Width: " + str(width))
+        #logger.info("2 Height: " + str(height))
+        #logger.info("2 image mode: " + str(image.mode))
 
         if self.transforms is not None:
-            logger.info("TRANSFORMS ENABLED")
+            #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
 
-        logger.info("3 img type: " + str(type(image)))
-        logger.info("3 img : " + str(image))
+        #logger.info("3 img type: " + str(type(image)))
+        #logger.info("3 img : " + str(image))
 
         return image, target
     
