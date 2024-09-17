@@ -7,7 +7,9 @@ import torch
 import torch.nn as nn
 from torch.nn.init import trunc_normal_
 from torch.nn.utils import weight_norm
+import logging
 
+logger = logging.getLogger("dinov2")
 
 class DINOHead(nn.Module):
     def __init__(
@@ -22,9 +24,9 @@ class DINOHead(nn.Module):
     ):
         super().__init__()
         nlayers = max(nlayers, 1)
+        logger.info("CODY: " + str(hidden_dim) + str(out_dim))
         self.mlp = _build_mlp(nlayers, in_dim, bottleneck_dim, hidden_dim=hidden_dim, use_bn=use_bn, bias=mlp_bias)
         self.apply(self._init_weights)
-        print('CODY:', bottleneck_dim, out_dim)
         self.last_layer = weight_norm(nn.Linear(bottleneck_dim, out_dim, bias=False))
         self.last_layer.weight_g.data.fill_(1)
 
