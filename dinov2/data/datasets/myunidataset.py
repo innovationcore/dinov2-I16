@@ -49,9 +49,9 @@ class MyUniDataset(ExtendedVisionDataset):
         #logger.info("2 Height: " + str(height))
         #logger.info("2 image mode: " + str(image.mode))
 
-        #if self.transforms is not None:
+        if self.transforms is not None:
             #logger.info("TRANSFORMS ENABLED")
-        #    image, target = self.transforms(image, target)
+            image, target = self.transforms(image, target)
 
         #logger.info("3 img type: " + str(type(image)))
         #logger.info("3 img : " + str(image))
