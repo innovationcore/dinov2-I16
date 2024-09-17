@@ -37,7 +37,7 @@ class DINOHead(nn.Module):
 
     def forward(self, x):
         x = self.mlp(x)
-        eps = 1e-6 if x.dtype == torch.float32 else 1e-12
+        eps = 1e-6 if x.dtype == torch.float16 else 1e-12
         x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
         x = self.last_layer(x)
         return x

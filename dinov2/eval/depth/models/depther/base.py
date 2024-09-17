@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 import torch
 import torch.distributed as dist
-from mmcv.runner import BaseModule, auto_fp16
+from mmcv.runner import BaseModule, auto_fp32
 
 
 class BaseDepther(BaseModule, metaclass=ABCMeta):
@@ -90,7 +90,7 @@ class BaseDepther(BaseModule, metaclass=ABCMeta):
         else:
             return self.aug_test(imgs, img_metas, **kwargs)
 
-    @auto_fp16(apply_to=("img",))
+    @auto_fp32(apply_to=("img",))
     def forward(self, img, img_metas, return_loss=True, **kwargs):
         """Calls either :func:`forward_train` or :func:`forward_test` depending
         on whether ``return_loss`` is ``True``.
