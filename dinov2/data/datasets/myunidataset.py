@@ -1,45 +1,25 @@
-import glob
 import logging
-import os
-from enum import Enum
-from typing import Any, Dict, List, Tuple, Callable, Optional
-
-import numpy as np
+from typing import Any, Tuple, Callable, Optional
 from PIL import Image
 from fastai.vision.all import Path, get_image_files, verify_images
-import tqdm
+
 from dinov2.data.datasets.extended import ExtendedVisionDataset
-import torchvision.transforms as transforms
-from functools import partial
 
 logger = logging.getLogger("dinov2")
 class MyUniDataset(ExtendedVisionDataset):
-    def __init__(self, data_folder: str, verify: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
-        super().__init__(data_folder, transforms, transform, target_transform)
-        self.root = Path(data_folder).expanduser()
+    def __init__(self, root: str, verify: bool = False, transforms: Optional[Callable] = None, transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
+        super().__init__(root, transforms, transform, target_transform)
+
+        self.root = Path(root).expanduser()
         image_paths = get_image_files(self.root)
         invalid_images = set()
         if verify:
             invalid_images = set(verify_images(image_paths))
         self.image_paths = [p for p in image_paths if p not in invalid_images]
 
-        self.data_folder = data_folder
-        self.paths = []
-        self.samples = self.prepare_samples()
-        print('NUM SAMPLES:', len(self.samples))
-
-        resize_dim = 512
-
-        self.transform = transforms.Compose([
-            transforms.Resize((resize_dim, resize_dim)),
-            transforms.ToTensor()
-        ])
-
-        self.nii_to_tensor = partial(self.nii_img_to_tensor, transform=self.transform)
-
     def get_image_data(self, index: int) -> bytes:
         image_path = self.image_paths[index]
-        img = Image.open(image_path).convert("RGB")
+        img = Image.open(image_path)
         num_channels = len(img.getbands())
         width, height = img.size
         logger.info("0 img type: " + str(type(img)))
@@ -47,40 +27,14 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("0 Height: " + str(height))
         logger.info("0 image mode: " + str(img.mode))
         logger.info("0 Number of channels: " + str(num_channels))
-        img = self.remove_transparency(img).convert('L')
-        width, height = img.size
-        num_channels = len(img.getbands())
-        logger.info("1 img type: " + str(type(img)))
-        logger.info("1 Width: " + str(width))
-        logger.info("1 Height: " + str(height))
-        logger.info("1 image mode: " + str(img.mode))
-        logger.info("1 Number of channels: " + str(num_channels))
-        #exit(0)
+
         return img
         
     def get_target(self, index: int) -> Any:
         return 0
 
-    def remove_transparency(self, im, bg_colour=(255, 255, 255)):
-
-        # Only process if image has transparency
-        if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
-
-            # Need to convert to RGBA if LA format due to a bug in PIL
-            alpha = im.convert('RGBA').split()[-1]
-
-            # Create a new background image of our matt color.
-            # Must be RGBA because paste requires both images have the same format
-
-            bg = Image.new("RGBA", im.size, bg_colour + (255,))
-            bg.paste(im, mask=alpha)
-            return bg
-
-        else:
-            return im
-
     def __len__(self) -> int:
-        return len(self.samples)
+        return len(self.image_paths)
     
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         try:
@@ -103,3 +57,4 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("3 img : " + str(image))
 
         return image, target
+    
