@@ -75,7 +75,7 @@ class DataAugmentationDINO(object):
                 transforms.RandomGrayscale(p=0.2),
             ]
         )
-
+        '''
         global_transfo1_extra = GaussianBlur(p=1.0)
 
         global_transfo2_extra = transforms.Compose(
@@ -86,7 +86,7 @@ class DataAugmentationDINO(object):
         )
 
         local_transfo_extra = GaussianBlur(p=0.5)
-
+        '''
         # normalization
         self.normalize = transforms.Compose(
             [
@@ -101,9 +101,13 @@ class DataAugmentationDINO(object):
         #self.global_transfo1 = transforms.Compose([global_transfo1_extra])
         #self.global_transfo2 = transforms.Compose([global_transfo2_extra])
         #self.local_transfo = transforms.Compose([local_transfo_extra])
-        self.global_transfo1 = transforms.Compose([global_transfo1_extra, self.normalize])
-        self.global_transfo2 = transforms.Compose([global_transfo2_extra, self.normalize])
-        self.local_transfo = transforms.Compose([local_transfo_extra, self.normalize])
+        #self.global_transfo1 = transforms.Compose([global_transfo1_extra, self.normalize])
+        #self.global_transfo2 = transforms.Compose([global_transfo2_extra, self.normalize])
+        #self.local_transfo = transforms.Compose([local_transfo_extra, self.normalize])
+        self.global_transfo1 = transforms.Compose([self.normalize])
+        self.global_transfo2 = transforms.Compose([self.normalize])
+        self.local_transfo = transforms.Compose([self.normalize])
+
 
     def __call__(self, image):
         output = {}
