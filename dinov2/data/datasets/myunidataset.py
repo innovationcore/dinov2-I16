@@ -43,7 +43,7 @@ class MyUniDataset(ExtendedVisionDataset):
             raise RuntimeError(f"can not read image for sample {index}") from e
         target = self.get_target(index)
 
-        width, height = image.size
+        #width, height = image.size
         #logger.info("2 img type: " + str(type(image)))
         #logger.info("2 Width: " + str(width))
         #logger.info("2 Height: " + str(height))
@@ -53,8 +53,9 @@ class MyUniDataset(ExtendedVisionDataset):
             #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
 
-        #logger.info("3 img type: " + str(type(image)))
-        #logger.info("3 img : " + str(image))
+        logger.info("3 img type: " + str(type(image)))
+        logger.info("3 img : " + str(image))
+        exit()
 
         return image, target
     
