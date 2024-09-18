@@ -41,7 +41,7 @@ class DINOHead(nn.Module):
         logger.info("CODY 0")
         #x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
         logger.info("CODY 1")
-        x = self.last_layer(x)
+        #x = self.last_layer(x)
         return x
 
 
