@@ -13,6 +13,9 @@ from .backbones import _make_dinov2_model
 from .depth import BNHead, DepthEncoderDecoder, DPTHead
 from .utils import _DINOV2_BASE_URL, _make_dinov2_model_name, CenterPadding
 
+import logging
+
+logger = logging.getLogger("dinov2")
 
 class Weights(Enum):
     NYU = "NYU"
@@ -118,7 +121,9 @@ def _make_dinov2_linear_depther(
         assert layers == 1
         out_index = [layer_count - 1]
 
+    logger.info("BACKBONE: " + str(backbone))
     model = DepthEncoderDecoder(backbone=backbone, decode_head=linear_depth_head)
+
     model.backbone.forward = partial(
         backbone.get_intermediate_layers,
         n=out_index,

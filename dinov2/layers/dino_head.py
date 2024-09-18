@@ -36,11 +36,7 @@ class DINOHead(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        if x is not None:
-            logger.info("X IS NONE DAWG 0")
         x = self.mlp(x)
-        if x is not None:
-            logger.info("X IS NONE DAWG 0")
         eps = 1e-6 if x.dtype == torch.float16 else 1e-12
         logger.info("CODY 0")
         x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
