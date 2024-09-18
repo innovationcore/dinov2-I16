@@ -121,7 +121,6 @@ def _make_dinov2_linear_depther(
         assert layers == 1
         out_index = [layer_count - 1]
 
-    logger.info("CODY BACKBONE DEPTHERS B: " + str(backbone))
     model = DepthEncoderDecoder(backbone=backbone, decode_head=linear_depth_head)
 
     model.backbone.forward = partial(
@@ -211,7 +210,7 @@ def _make_dinov2_dpt_depther(
         "vit_large": [4, 11, 17, 23],
         "vit_giant2": [9, 19, 29, 39],
     }[arch_name]
-    logger.info("CODY BACKBONE DEPTHERS A: " + str(backbone))
+
     model = DepthEncoderDecoder(backbone=backbone, decode_head=dpt_depth_head)
     model.backbone.forward = partial(
         backbone.get_intermediate_layers,
