@@ -49,6 +49,12 @@ class MyUniDataset(ExtendedVisionDataset):
         #logger.info("2 Height: " + str(height))
         #logger.info("2 image mode: " + str(image.mode))
 
+        logger.info("2 img global: " + str(image['global_crops']))
+        logger.info("2 img type: " + str(type(image)))
+        logger.info("2 img keys: " + str(image.keys()))
+        logger.info("2 img global: " + str(type(image['global_crops'])))
+
+
         if self.transforms is not None:
             #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
