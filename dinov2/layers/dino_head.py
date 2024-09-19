@@ -39,7 +39,7 @@ class DINOHead(nn.Module):
         x = self.mlp(x)
         eps = 1e-6 if x.dtype == torch.float16 else 1e-12
         logger.info("CODY 0")
-        #x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
+        x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
         logger.info("CODY 1")
         x = self.last_layer(x)
         return x
