@@ -50,7 +50,7 @@ class MyUniDataset(ExtendedVisionDataset):
         #logger.info("2 Width: " + str(width))
         #logger.info("2 Height: " + str(height))
         #logger.info("2 image mode: " + str(image.mode))
-
+        image = image.convert('L')
         logger.info("2 img type: " + str(type(image)))
 
         numpy_array = np.array(image)
