@@ -23,10 +23,11 @@ class MyUniDataset(ExtendedVisionDataset):
 
     def get_image_data(self, index: int) -> bytes:
         image_path = self.image_paths[index]
-        img = Image.open(image_path).convert("RGB")
-        img = self.remove_transparency(img).convert('L')
-        num_channels = len(img.getbands())
-        width, height = img.size
+        img = Image.open(image_path)
+        #img = Image.open(image_path).convert("RGB")
+        #img = self.remove_transparency(img).convert('L')
+        #num_channels = len(img.getbands())
+        #width, height = img.size
         # logger.info("0 img type: " + str(type(img)))
         # logger.info("0 Width: " + str(width))
         # logger.info("0 Height: " + str(height))
@@ -66,6 +67,8 @@ class MyUniDataset(ExtendedVisionDataset):
             raise RuntimeError(f"can not read image for sample {index}") from e
         target = self.get_target(index)
 
+        image = self.remove_transparency(image).convert('L')
+
         width, height = image.size
         logger.info("2 img type: " + str(type(image)))
         logger.info("2 Width: " + str(width))
@@ -77,6 +80,6 @@ class MyUniDataset(ExtendedVisionDataset):
             image, target = self.transforms(image, target)
 
         logger.info("3 img type: " + str(type(image)))
-        logger.info("3 img : " + str(image))
+        #logger.info("3 img : " + str(image))
 
         return image, target
