@@ -68,7 +68,7 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("3 img keys: " + str(image.keys()))
         logger.info("3 img global: " + str(type(image['global_crops'])))
         #logger.info("3 img : " + str(image))
-        exit()
+        #exit()
 
         return image, target
     
