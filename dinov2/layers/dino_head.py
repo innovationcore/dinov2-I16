@@ -7,7 +7,9 @@ import torch
 import torch.nn as nn
 from torch.nn.init import trunc_normal_
 from torch.nn.utils import weight_norm
+import logging
 
+logger = logging.getLogger("dinov2")
 
 class DINOHead(nn.Module):
     def __init__(
@@ -36,12 +38,17 @@ class DINOHead(nn.Module):
     def forward(self, x):
         x = self.mlp(x)
         eps = 1e-6 if x.dtype == torch.float16 else 1e-12
+        logger.info("CODY 0")
         x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
+        logger.info("CODY 1")
         x = self.last_layer(x)
         return x
 
 
 def _build_mlp(nlayers, in_dim, bottleneck_dim, hidden_dim=None, use_bn=False, bias=True):
+
+    logger.info(f"Building MLP with {nlayers} layers")
+
     if nlayers == 1:
         return nn.Linear(in_dim, bottleneck_dim, bias=bias)
     else:

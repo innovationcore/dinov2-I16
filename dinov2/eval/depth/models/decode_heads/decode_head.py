@@ -10,7 +10,7 @@ import mmcv
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.runner import BaseModule, auto_fp16, force_fp32
+from mmcv.runner import BaseModule, auto_fp32, force_fp32
 
 import logging
 
@@ -112,7 +112,7 @@ class DepthBaseDecodeHead(BaseModule, metaclass=ABCMeta):
         s = f"align_corners={self.align_corners}"
         return s
 
-    @auto_fp16()
+    @auto_fp32()
     @abstractmethod
     def forward(self, inputs, img_metas):
         """Placeholder of forward function."""

@@ -9,7 +9,7 @@ from torchvision import transforms
 
 from .transforms import (
     RandomRotate90,
-    GaussianBlur,
+    #GaussianBlur,
     make_normalize_transform,
 )
 
@@ -47,8 +47,9 @@ class DataAugmentationDINO(object):
                 #    global_crops_size, scale=global_crops_scale, interpolation=transforms.InterpolationMode.BICUBIC
                 #),
                 #transforms.RandomCrop(global_crops_size),
-                transforms.Resize(global_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
-                transforms.RandomHorizontalFlip(p=0.5),
+                #transforms.Resize(global_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
+                transforms.Resize(local_crops_size, interpolation=transforms.InterpolationMode.NEAREST),
+                #transforms.RandomHorizontalFlip(p=0.5),
                 #RandomRotate90(p=1),
             ]
         )
@@ -59,13 +60,15 @@ class DataAugmentationDINO(object):
                 #    local_crops_size, scale=local_crops_scale, interpolation=transforms.InterpolationMode.BICUBIC
                 #),
                 #transforms.RandomCrop(local_crops_size),
-                transforms.Resize(local_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
-                transforms.RandomHorizontalFlip(p=0.5),
+                #transforms.Resize(local_crops_size, interpolation=transforms.InterpolationMode.BICUBIC),
+                transforms.Resize(local_crops_size, interpolation=transforms.InterpolationMode.NEAREST),
+                #transforms.RandomHorizontalFlip(p=0.5),
                 #RandomRotate90(p=1),
             ]
         )
 
         # color distorsions / blurring
+        '''
         color_jittering = transforms.Compose(
             [
                 transforms.RandomApply(
@@ -75,7 +78,8 @@ class DataAugmentationDINO(object):
                 transforms.RandomGrayscale(p=0.2),
             ]
         )
-
+        '''
+        '''
         global_transfo1_extra = GaussianBlur(p=1.0)
 
         global_transfo2_extra = transforms.Compose(
@@ -86,7 +90,7 @@ class DataAugmentationDINO(object):
         )
 
         local_transfo_extra = GaussianBlur(p=0.5)
-
+        '''
         # normalization
         self.normalize = transforms.Compose(
             [
@@ -101,9 +105,13 @@ class DataAugmentationDINO(object):
         #self.global_transfo1 = transforms.Compose([global_transfo1_extra])
         #self.global_transfo2 = transforms.Compose([global_transfo2_extra])
         #self.local_transfo = transforms.Compose([local_transfo_extra])
-        self.global_transfo1 = transforms.Compose([global_transfo1_extra, self.normalize])
-        self.global_transfo2 = transforms.Compose([global_transfo2_extra, self.normalize])
-        self.local_transfo = transforms.Compose([local_transfo_extra, self.normalize])
+        #self.global_transfo1 = transforms.Compose([global_transfo1_extra, self.normalize])
+        #self.global_transfo2 = transforms.Compose([global_transfo2_extra, self.normalize])
+        #self.local_transfo = transforms.Compose([local_transfo_extra, self.normalize])
+        self.global_transfo1 = transforms.Compose([self.normalize])
+        self.global_transfo2 = transforms.Compose([self.normalize])
+        self.local_transfo = transforms.Compose([self.normalize])
+
 
     def __call__(self, image):
         output = {}
@@ -126,5 +134,6 @@ class DataAugmentationDINO(object):
         ]
         output["local_crops"] = local_crops
         output["offsets"] = ()
+
 
         return output
