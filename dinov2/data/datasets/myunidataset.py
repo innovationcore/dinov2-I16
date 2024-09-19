@@ -54,7 +54,7 @@ class MyUniDataset(ExtendedVisionDataset):
             image, target = self.transforms(image, target)
 
         logger.info("3 img type: " + str(type(image)))
-        logger.info("3 img shape: " + str(image.shape))
+        logger.info("3 img : " + str(image))
         #logger.info("3 img : " + str(image))
         exit()
 
