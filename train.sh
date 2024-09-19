@@ -1,7 +1,7 @@
-export OMP_NUM_THREADS=8
+export OMP_NUM_THREADS=1
 
 #HUGE HACK
 unset "${!SLURM@}"
 #HACK
 
-torchrun --nproc_per_node=8 dinov2/train/train.py --config-file=vitb14.yaml --output-dir=/workspace/output_model
+torchrun --nproc_per_node=1 dinov2/train/train.py --config-file=$1.yaml --output-dir=/workspace/$1
