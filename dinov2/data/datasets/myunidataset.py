@@ -59,6 +59,10 @@ class MyUniDataset(ExtendedVisionDataset):
         numpy_array = np.expand_dims(numpy_array, axis=0)  # Adds a new dimension at the beginning
         logger.info("2 img shape 1: " + str(numpy_array.shape))
 
+        image = Image.fromarray(numpy_array)
+        numpy_array = np.array(image)
+        logger.info("2 img shape 3: " + str(numpy_array.shape))
+
         if self.transforms is not None:
             #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
