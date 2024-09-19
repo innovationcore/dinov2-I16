@@ -68,6 +68,7 @@ class MyUniDataset(ExtendedVisionDataset):
         target = self.get_target(index)
 
         image = self.remove_transparency(image).convert('L')
+        image = image.convert('I')
 
         width, height = image.size
         logger.info("2 img type: " + str(type(image)))
