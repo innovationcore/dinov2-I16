@@ -9,7 +9,6 @@ from dinov2.data.datasets.extended import ExtendedVisionDataset
 
 logger = logging.getLogger("dinov2")
 
-
 class MyUniDataset(ExtendedVisionDataset):
     def __init__(self, root: str, verify: bool = False, transforms: Optional[Callable] = None,
                  transform: Optional[Callable] = None, target_transform: Optional[Callable] = None) -> None:
