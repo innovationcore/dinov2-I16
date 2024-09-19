@@ -69,18 +69,18 @@ class MyUniDataset(ExtendedVisionDataset):
 
         #image = self.remove_transparency(image).convert('L')
         #image = image.convert('I;16')
-
+        '''
         width, height = image.size
         logger.info("2 img type: " + str(type(image)))
         logger.info("2 Width: " + str(width))
         logger.info("2 Height: " + str(height))
         logger.info("2 image mode: " + str(image.mode))
-
+        '''
         if self.transforms is not None:
-            logger.info("TRANSFORMS ENABLED")
+            #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
 
-        logger.info("3 img type: " + str(type(image)))
+        #logger.info("3 img type: " + str(type(image)))
         #logger.info("3 img : " + str(image))
 
         return image, target
