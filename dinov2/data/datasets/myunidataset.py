@@ -1,5 +1,7 @@
 import logging
 from typing import Any, Tuple, Callable, Optional
+
+import numpy as np
 from PIL import Image
 from fastai.vision.all import Path, get_image_files, verify_images
 
@@ -50,7 +52,11 @@ class MyUniDataset(ExtendedVisionDataset):
         #logger.info("2 image mode: " + str(image.mode))
 
         logger.info("2 img type: " + str(type(image)))
-        #logger.info("2 img global: " + str())
+
+        numpy_array = np.array(image)
+        logger.info("2 img shape: " + str(numpy_array.shape))
+        logger.info("2 img dtype: " + str(numpy_array.dtype))
+
 
 
         if self.transforms is not None:
