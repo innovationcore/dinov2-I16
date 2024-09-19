@@ -24,22 +24,15 @@ class MyUniDataset(ExtendedVisionDataset):
     def get_image_data(self, index: int) -> bytes:
         image_path = self.image_paths[index]
         img = Image.open(image_path).convert("RGB")
-        num_channels = len(img.getbands())
-        width, height = img.size
-        logger.info("0 img type: " + str(type(img)))
-        logger.info("0 Width: " + str(width))
-        logger.info("0 Height: " + str(height))
-        logger.info("0 image mode: " + str(img.mode))
-        logger.info("0 Number of channels: " + str(num_channels))
         img = self.remove_transparency(img).convert('L')
-        width, height = img.size
         num_channels = len(img.getbands())
-        logger.info("1 img type: " + str(type(img)))
-        logger.info("1 Width: " + str(width))
-        logger.info("1 Height: " + str(height))
-        logger.info("1 image mode: " + str(img.mode))
-        logger.info("1 Number of channels: " + str(num_channels))
-        # exit(0)
+        width, height = img.size
+        # logger.info("0 img type: " + str(type(img)))
+        # logger.info("0 Width: " + str(width))
+        # logger.info("0 Height: " + str(height))
+        # logger.info("0 image mode: " + str(img.mode))
+        # logger.info("0 Number of channels: " + str(num_channels))
+
         return img
 
     def get_target(self, index: int) -> Any:
