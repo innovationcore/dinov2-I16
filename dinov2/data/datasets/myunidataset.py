@@ -60,8 +60,8 @@ class MyUniDataset(ExtendedVisionDataset):
 
     def normalize_image(self, image):
         # Convert PIL Image to numpy array
-        img_array = np.array(image).astype(np.float32)
-
+        #img_array = np.array(image).astype(np.float32)
+        img_array = np.array(image)
         # Normalize the pixel values to the range [0, 1]
         img_array /= 65535.0
 
