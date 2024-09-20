@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any, Dict, List, Tuple, Callable, Optional
 from PIL import Image
 from fastai.vision.all import Path, get_image_files, verify_images
+import numpy as np
 
 from dinov2.data.datasets.extended import ExtendedVisionDataset
 
@@ -57,6 +58,17 @@ class MyUniDataset(ExtendedVisionDataset):
         else:
             return im
 
+    def normalize_image(self, image):
+        # Convert PIL Image to numpy array
+        img_array = np.array(image).astype(np.float32)
+
+        # Normalize the pixel values to the range [0, 1]
+        img_array /= 65535.0
+
+        image = Image.fromarray(img_array)
+
+        return image
+
     def __len__(self) -> int:
         return len(self.image_paths)
 
@@ -76,6 +88,9 @@ class MyUniDataset(ExtendedVisionDataset):
         logger.info("2 Height: " + str(height))
         logger.info("2 image mode: " + str(image.mode))
         '''
+
+        image = self.normalize_image(image)
+
         if self.transforms is not None:
             #logger.info("TRANSFORMS ENABLED")
             image, target = self.transforms(image, target)
