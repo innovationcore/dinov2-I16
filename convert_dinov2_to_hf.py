@@ -178,7 +178,7 @@ def read_in_q_k_v(state_dict, config):
 def prepare_img(config):
     url = "http://images.cocodataset.org/val2017/000000039769.jpg"
     if config.num_channels == 1:
-        image = Image.open(requests.get(url, stream=True).raw).convert("L")
+        image = Image.open(requests.get(url, stream=True).raw).convert("I;16")
     else:
         image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
 
@@ -397,7 +397,7 @@ def convert_dinov2_checkpoint3(model_name, pytorch_dump_folder_path, push_to_hub
 
     transformations = transforms.Compose(
         [
-            transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.NEAREST),
             transforms.RandomCrop(config.image_size),
             transforms.ToTensor(),
         ]
@@ -517,13 +517,12 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         model = Dinov2Model(config).eval()
         model.load_state_dict(state_dict)
 
-
     # load image
     image = prepare_img(config)
 
     transformations = transforms.Compose(
         [
-            transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.BICUBIC),
+            transforms.Resize(config.image_size, interpolation=transforms.InterpolationMode.NEAREST),
             transforms.RandomCrop(config.image_size),
             transforms.ToTensor(),
         ]
@@ -546,16 +545,8 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
     image = asarray(image)
     image = np.expand_dims(image, axis=-1)
 
-    #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.LAST, input_data_format=ChannelDimension.LAST).pixel_values
-    #pixel_values = processor(image, return_tensors="pt", data_format=ChannelDimension.FIRST, input_data_format=ChannelDimension.FIRST).pixel_values
     pixel_values = processor(image, return_tensors="pt").pixel_values
 
-    print(type(original_pixel_values))
-    print(original_pixel_values.shape)
-    print(type(pixel_values))
-    print(pixel_values.shape)
-
-    '''
     try: assert torch.allclose(original_pixel_values, pixel_values)
     except Exception as e:
         print(e)
@@ -573,7 +564,7 @@ def convert_dinov2_checkpoint(model_name, pytorch_dump_folder_path, push_to_hub=
         assert outputs.last_hidden_state[:, 0].shape == original_outputs.shape
         assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
     print("Looks ok!")
-    '''
+
     if pytorch_dump_folder_path is not None:
         Path(pytorch_dump_folder_path).mkdir(exist_ok=True)
         print(f"Saving model {model_name} to {pytorch_dump_folder_path}")

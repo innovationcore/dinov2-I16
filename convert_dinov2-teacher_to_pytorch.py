@@ -55,6 +55,7 @@ def remove_header(teacher_dict):
 
 
 def main(teacher_checkpoint_path, dump_path_vit_model):
+
     hf_model = get_model('vits')
 
     hf_model.eval()
