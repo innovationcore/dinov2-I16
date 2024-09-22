@@ -106,6 +106,7 @@ class FSDPCheckpointer(Checkpointer):
         save_file = os.path.join(self.save_dir, basename)
         assert os.path.basename(save_file) == basename, basename
         self.logger.info("Saving checkpoint to {}".format(save_file))
+        self.logger.info("Dist RANK {}".format(str(distributed.get_global_rank())))
         with self.path_manager.open(save_file, "wb") as f:
             torch.save(data, f)
         self.tag_last_checkpoint(basename)
