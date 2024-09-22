@@ -63,7 +63,9 @@ class MyUniDataset(ExtendedVisionDataset):
         #img_array = np.array(image).astype(np.float32)
         img_array = np.array(image)
         # Normalize the pixel values to the range [0, 1]
-        img_array /= np.uint16(65535.0)
+        divisor = np.uint16(65535.0)
+
+        img_array /= divisor.astype(np.uint16)
 
         image = Image.fromarray(img_array)
 
