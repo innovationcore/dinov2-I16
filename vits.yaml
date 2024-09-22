@@ -62,9 +62,9 @@ train:
   batch_size_per_gpu: 42
   dataset_path: MyUniDataset:root=/workspace/CT-RATE/dataset/test_preprocessed
   #dataset_path: MyUniDataset:root=/workspace/ccs_dataset_I16_train
-  #dataset_path: MyUniDataset:root=/workspace/code/ccs_dataset_I16_train 
+  #dataset_path: MyUniDataset:root=/workspace/code/ccs_dataset_I16_train
   output_dir: /workspace/output_model
-  saveckp_freq: 6000
+  saveckp_freq: 600
   seed: 0
   num_workers: 8
   OFFICIAL_EPOCH_LENGTH: 600
@@ -100,7 +100,7 @@ optim:
   weight_decay: 0.04
   weight_decay_end: 0.2
   base_lr: 0.0002
-  #base_lr: 0.00002 
+  #base_lr: 0.00002
   lr: 0.00012183492931011204
   #lr: 0.00001
   warmup_epochs: 2
@@ -123,4 +123,4 @@ crops:
   global_crops_size: 512
   local_crops_size: 112
 evaluation:
-  eval_period_iterations: 10
+  eval_period_iterations: 600
