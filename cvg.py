@@ -1,14 +1,3 @@
-import os
-import uuid
-
-import torch
-from functools import partial
-import yaml
-from transformers import Dinov2Model, Dinov2Config
-
-from dinov2.models.vision_transformer import DinoVisionTransformer
-from dinov2.layers import MemEffAttention, NestedTensorBlock as Block
-
 
 import argparse
 import json
@@ -33,6 +22,21 @@ from functools import partial
 from dinov2.models.vision_transformer import DinoVisionTransformer
 
 from dinov2.layers import MemEffAttention, NestedTensorBlock as Block
+
+
+import os
+
+from dinov2.models.vision_transformer import vit_large
+
+#do this due to CPU/GPU bug
+os.environ["XFORMERS_DISABLED"] = "1"
+#pretrained server containing cert was bad
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
+logging.set_verbosity_info()
+logger = logging.get_logger(__name__)
+
 
 def get_model(model_config):
 
@@ -64,15 +68,15 @@ def get_model(model_config):
         num_heads = 24
 
     model = DinoVisionTransformer(
-        depth=depth,
-        init_values=init_values,
-        num_heads=num_heads,
-        ffn_layer=ffn_layer,
-        ffn_bias=ffn_bias,
         img_size=img_size,
-        embed_dim=embed_dim,
         patch_size=patch_size,
         in_chans=in_chans,
+        embed_dim=embed_dim,
+        depth=depth,
+        num_heads=num_heads,
+        ffn_bias=ffn_bias,
+        init_values=init_values,
+        ffn_layer=ffn_layer,
         num_register_tokens=num_register_tokens,
         block_chunks=block_chunks,
         block_fn=partial(Block, attn_class=MemEffAttention),
@@ -80,48 +84,20 @@ def get_model(model_config):
 
     return model
 
-def prepare_img(config):
-    url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-    if config.num_channels == 1:
-        image = Image.open(requests.get(url, stream=True).raw).convert("I;16")
-    else:
-        image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
-
-    return image
-
-def modify_header(teacher_dict):
-    renamed_teacher_dict = {}
-
-    for k in teacher_dict.keys():
-
-        if 'backbone' in k:
-            new_key = k.replace('backbone.', '')
-
-            #if "vits" == model_type:
-            #match = re.search(r'blocks\.(\d+)\.(\d+)\.', new_key)
-            #if match:
-            #    new_key = new_key.replace(f'blocks.{match.group(1)}.{match.group(2)}.', f'blocks.{match.group(2)}.')
-
-            renamed_teacher_dict[new_key] = teacher_dict[k]
-    return renamed_teacher_dict
-
-def get_config():
-
-    model_config = None
-
-    if os.path.isfile(args.model_config):
-        with open(args.model_config, 'r') as file:
-            model_config = yaml.safe_load(file)
-
-    return model_config
 
 def get_dinov2_config(model_config):
 
     patch_size = model_config['student']['patch_size']
     in_chans = model_config['train']['in_chans']
     embed_dim = model_config['dino']['head_bottleneck_dim']
+    head_nlayers = model_config['dino']['head_nlayers']
     img_size = model_config['crops']['global_crops_size']
+    ffn_bias = model_config['student']['ffn_bias']
+    ffn_layer = model_config['student']['ffn_layer']
+    num_register_tokens = model_config['student']['num_register_tokens']
+    block_chunks = model_config['teacher']['block_chunks']
     arch = model_config['student']['arch']
+    init_values = 1.0
 
     config = Dinov2Config(
         hidden_size=embed_dim,
@@ -160,6 +136,9 @@ def create_rename_keys(config, model_config):
     rename_keys.append(("patch_embed.proj.weight", "embeddings.patch_embeddings.projection.weight"))
     rename_keys.append(("patch_embed.proj.bias", "embeddings.patch_embeddings.projection.bias"))
 
+    #print('hidden layers:', config.num_hidden_layers)
+    #print('n_head layers:', head_nlayers)
+    #for i in range(config.block_chunks):
     i = 0
     ii_count = 0
     for ii in range(config.num_hidden_layers):
@@ -210,6 +189,9 @@ def read_in_q_k_v(state_dict, config, model_config):
 
     head_nlayers = model_config['dino']['head_nlayers']
 
+    print('hidden layers:', config.num_hidden_layers)
+    print('n_head layers:', head_nlayers)
+    # for i in range(config.block_chunks):
     i = 0
     ii_count = 0
 
@@ -238,54 +220,46 @@ def read_in_q_k_v(state_dict, config, model_config):
             ii_count += 1
 
 
-
-def convert_teacher_to_pytorch_dinov2(args, model_config):
-
-    pytorch_model = get_model(model_config)
-
-    pytorch_model.eval()
-
-    teacher_dict = torch.load(args.teacher_checkpoint_path, map_location=torch.device('cpu'))['teacher']
-    reshaped_teacher_dict = modify_header(teacher_dict=teacher_dict)
-
-    pytorch_model.load_state_dict(reshaped_teacher_dict)
-    #pytorch_model_path = str(uuid.uuid4()) + '.pth'
-    #torch.save(reshaped_teacher_dict, pytorch_model_path)
-
-    hf_model_dict = pytorch_model.state_dict()
-    hf_model_dict_keys = set(hf_model_dict.keys())
-    renamed_keys = set(reshaped_teacher_dict.keys())
-    non_matching_keys = hf_model_dict_keys.symmetric_difference(renamed_keys)
-
-    for key in non_matching_keys:
-        print('Non-matching keys between small model and renamed teacher model:', key)
-        exit(0)
-
-    print('Checking shape compatibility between pytorch model and teacher model...')
-    shape_mismatch_keys = []
-    for key in hf_model_dict_keys.intersection(renamed_keys):
-        if hf_model_dict[key].shape != reshaped_teacher_dict[key].shape:
-            shape_mismatch_keys.append((key, hf_model_dict[key].shape, reshaped_teacher_dict[key].shape))
-
-    if shape_mismatch_keys:
-        print('Shape mismatch found in the following keys:')
-        for key, small_shape, renamed_shape in shape_mismatch_keys:
-            print(f"Key: {key} | Small model shape: {small_shape} | Renamed teacher shape: {renamed_shape}")
-        exit()
+# We will verify our results on an image of cute cats
+def prepare_img(config):
+    url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+    if config.num_channels == 1:
+        image = Image.open(requests.get(url, stream=True).raw).convert("I;16")
     else:
-        print("All matching keys have compatible shapes.")
+        image = Image.open(requests.get(url, stream=True).raw).convert("RGB")
 
-    print('Teacher model converted to pytorch model')
+    num_channels = len(image.getbands())
+    print('num_channels:', num_channels)
+    print('img mode:', image.mode)
 
-    return pytorch_model
+    return image
 
-def convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model):
+def get_config():
 
+    model_config = None
+
+    if os.path.isfile(args.model_config):
+        with open(args.model_config, 'r') as file:
+            model_config = yaml.safe_load(file)
+
+    return model_config
+
+@torch.no_grad()
+def convert_dinov2_checkpoint(args):
+
+    model_config = get_config()
+    # define default Dinov2 configuration
     config = get_dinov2_config(model_config)
 
-    print('Converting PyTorch Dinov2 keys to HF...')
+    # load original model from torch hub
+    #original_model = torch.hub.load("facebookresearch/dinov2", model_name.replace("_1layer", ""))
+    original_model= get_model(model_config)
+    original_model.load_state_dict(torch.load('dino_vit.pth', map_location="cpu"))
+    #original_model = torch.hub.load('dino_vit_small.pth')
+    original_model.eval()
 
-    state_dict = pytorch_model.state_dict()
+    # load state_dict of original model, remove and rename some keys
+    state_dict = original_model.state_dict()
     rename_keys = create_rename_keys(config, model_config)
     for src, dest in rename_keys:
         rename_key(state_dict, src, dest)
@@ -300,6 +274,9 @@ def convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model):
         state_dict[key] = val
 
     model = Dinov2Model(config).eval()
+    #print(model.state_dict().keys())
+    for key in model.state_dict().keys():
+        print(key)
     model.load_state_dict(state_dict)
 
     # load image
@@ -316,60 +293,76 @@ def convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model):
     original_pixel_values = transformations(image).unsqueeze(0)  # insert batch dimension
 
     processor = BitImageProcessor(
+        # size={'shortest_edge': config.image_size},
         size={'height': config.image_size, 'width': config.image_size},
         do_center_crop=False,
+        # crop_size={'shortest_edge': config.image_size},
         crop_size={'height': config.image_size, 'width': config.image_size},
+        # image_mean=0.5,
+        # image_std=0.5,
         resample=PILImageResampling.NEAREST,
         rescale_factor=0.00001525902,
         image_mean=[],
-        image_std=[],
+        image_std = [],
+        do_convert_rgb=False,
+        do_normalize=False,
+        #do_rescale=False,
+        #do_resize=False
+    )
+
+    '''
+    processor = BitImageProcessor(
+        #size={'shortest_edge': config.image_size},
+        size={'height': config.image_size, 'width': config.image_size},
+        #do_center_crop=True,
+        #crop_size={'shortest_edge': config.image_size},
+        crop_size={'height': config.image_size, 'width': config.image_size},
+        #image_mean=0.5,
+        #image_std=0.5,
         do_convert_rgb=False,
         do_normalize=False,
     )
+    '''
 
     image = asarray(image)
     image = np.expand_dims(image, axis=-1)
 
     pixel_values = processor(image, return_tensors="pt").pixel_values
 
-    try:
-        assert torch.allclose(original_pixel_values, pixel_values)
+    try: assert torch.allclose(original_pixel_values, pixel_values)
     except Exception as e:
         print(e)
-
+        
     with torch.no_grad():
         outputs = model(pixel_values, output_hidden_states=True)
-        original_outputs = pytorch_model(pixel_values)
+        original_outputs = original_model(pixel_values)
 
     assert outputs.last_hidden_state[:, 0].shape == original_outputs.shape
     assert torch.allclose(outputs.last_hidden_state[:, 0], original_outputs, atol=1e-3)
 
-    if args.output_path is not None:
-        Path(args.output_path).mkdir(exist_ok=True)
-        print(f"Saving model to {args.output_path}")
-        model.save_pretrained(args.output_path)
-        print(f"Saving image processor to {args.output_path}")
-        processor.save_pretrained(args.output_path)
 
-def main(args):
+    if args.pytorch_dump_folder_path is not None:
+        Path(args.pytorch_dump_folder_path).mkdir(exist_ok=True)
+        print(f"Saving model to {args.pytorch_dump_folder_path}")
+        model.save_pretrained(args.pytorch_dump_folder_path)
+        print(f"Saving image processor to {args.pytorch_dump_folder_path}")
+        processor.save_pretrained(args.pytorch_dump_folder_path)
 
-    model_config = get_config()
 
-    if (model_config is not None) and (os.path.isfile(args.teacher_checkpoint_path)):
-        pytorch_model = convert_teacher_to_pytorch_dinov2(args, model_config)
-        convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model)
+
 
 
 if __name__ == "__main__":
-    import argparse
+    parser = argparse.ArgumentParser()
+    # Required parameters
 
-    parser = argparse.ArgumentParser(description='simple feature extraction job')
     parser.add_argument('--model_config', type=str, help='Save file name for csv output', default="vits.yaml")
-    parser.add_argument('--teacher_checkpoint_path', type=str, help='teacher_checkpoint_path', default="teacher_checkpoint.pth")
-    parser.add_argument('--output_path', type=str, help='Save file name for csv output', default="converted_model")
+
+    parser.add_argument(
+        "--pytorch_dump_folder_path", default='test_model', type=str, help="Path to the output PyTorch model directory."
+    )
 
     args = parser.parse_args()
-
-    main(args)
+    convert_dinov2_checkpoint(args)
 
 

@@ -44,7 +44,7 @@ dino:
   loss_weight: 1.0
   head_n_prototypes: 131072
   head_bottleneck_dim: 384
-  head_nlayers: 1
+  head_nlayers: 3
   head_hidden_dim: 1536
   koleo_loss_weight: 0.1
 ibot:
@@ -56,13 +56,15 @@ ibot:
   separate_head: true
   head_n_prototypes: 131072
   head_bottleneck_dim: 256
-  head_nlayers: 1
+  head_nlayers: 3
   head_hidden_dim: 1536
 train:
   batch_size_per_gpu: 42
   dataset_path: MyUniDataset:root=/workspace/CT-RATE/dataset/test_preprocessed
+  #dataset_path: MyUniDataset:root=/workspace/ccs_dataset_I16_train
+  #dataset_path: MyUniDataset:root=/workspace/code/ccs_dataset_I16_train 
   output_dir: /workspace/output_model
-  saveckp_freq: 3000
+  saveckp_freq: 6000
   seed: 0
   num_workers: 8
   OFFICIAL_EPOCH_LENGTH: 600
@@ -90,15 +92,18 @@ teacher:
   final_momentum_teacher: 1
   warmup_teacher_temp: 0.04
   teacher_temp: 0.07
-  warmup_teacher_temp_epochs: 1
+  warmup_teacher_temp_epochs: 2
   in_chans: 1
+  block_chunks: 4
 optim:
-  epochs: 5
+  epochs: 20
   weight_decay: 0.04
   weight_decay_end: 0.2
   base_lr: 0.0002
+  #base_lr: 0.00002 
   lr: 0.00012183492931011204
-  warmup_epochs: 1
+  #lr: 0.00001
+  warmup_epochs: 2
   min_lr: 1.0e-06
   clip_grad: 3.0
   freeze_last_layer_epochs: 1
@@ -118,4 +123,4 @@ crops:
   global_crops_size: 512
   local_crops_size: 112
 evaluation:
-  eval_period_iterations: 1000
+  eval_period_iterations: 10
