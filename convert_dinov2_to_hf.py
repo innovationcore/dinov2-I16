@@ -1,37 +1,16 @@
 import os
-import uuid
-
-import torch
-from functools import partial
-import yaml
-from transformers import Dinov2Model, Dinov2Config
-
-from dinov2.models.vision_transformer import DinoVisionTransformer
-from dinov2.layers import MemEffAttention, NestedTensorBlock as Block
-
-
-import argparse
-import json
 from pathlib import Path
-
 import numpy as np
 import requests
 import torch
-import torch.nn as nn
 import yaml
-from huggingface_hub import hf_hub_download
 from PIL import Image
 from numpy import asarray
 from torchvision import transforms
-
-from transformers import BitImageProcessor, Dinov2Config, Dinov2ForImageClassification, Dinov2Model
-from transformers.image_transforms import to_channel_dimension_format
-from transformers.image_utils import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, PILImageResampling, ChannelDimension, \
-    infer_channel_dimension_format
-from transformers.utils import logging
+from transformers import BitImageProcessor, Dinov2Config, Dinov2Model
+from transformers.image_utils import PILImageResampling
 from functools import partial
 from dinov2.models.vision_transformer import DinoVisionTransformer
-
 from dinov2.layers import MemEffAttention, NestedTensorBlock as Block
 
 def get_model(model_config):
