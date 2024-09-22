@@ -24,6 +24,7 @@ def get_model(model_config):
     num_register_tokens = model_config['student']['num_register_tokens']
     block_chunks = model_config['teacher']['block_chunks']
     arch = model_config['student']['arch']
+    mlp_ratio = 4
     init_values = 1.0
 
     depth = None
@@ -44,6 +45,7 @@ def get_model(model_config):
 
     model = DinoVisionTransformer(
         depth=depth,
+        mlp_ratio=mlp_ratio,
         init_values=init_values,
         num_heads=num_heads,
         ffn_layer=ffn_layer,
@@ -57,7 +59,9 @@ def get_model(model_config):
         block_fn=partial(Block, attn_class=MemEffAttention),
     )
 
-    return model
+    mlp_index = int(depth/mlp_ratio)
+
+    return model, mlp_index
 
 def prepare_img(config):
     url = "http://images.cocodataset.org/val2017/000000039769.jpg"
@@ -76,6 +80,7 @@ def modify_header(teacher_dict):
         if 'backbone' in k:
             new_key = k.replace('backbone.', '')
 
+            #print(k)
             #if "vits" == model_type:
             #match = re.search(r'blocks\.(\d+)\.(\d+)\.', new_key)
             #if match:
@@ -117,7 +122,7 @@ def get_dinov2_config(model_config):
         config.num_hidden_layers = 24
         config.num_attention_heads = 16
     elif arch == 'vit_giant2':
-        config.use_swiglu_ffn = True
+        #config.use_swiglu_ffn = True
         config.num_hidden_layers = 40
         config.num_attention_heads = 24
     else:
@@ -125,9 +130,9 @@ def get_dinov2_config(model_config):
 
     return config
 
-def create_rename_keys(config, model_config):
+def create_rename_keys(config, model_config, mlp_index):
 
-    head_nlayers = model_config['dino']['head_nlayers']
+    #head_nlayers = model_config['dino']['head_nlayers']
 
     rename_keys = []
     # fmt: off
@@ -167,7 +172,7 @@ def create_rename_keys(config, model_config):
 
         #print('ii_count:', ii_count)
         #print('i:', i, 'ii', ii)
-        if ii_count == (head_nlayers -1):
+        if ii_count == (mlp_index -1):
             ii_count = 0
             i += 1
         else:
@@ -185,9 +190,9 @@ def rename_key(dct, old, new):
     val = dct.pop(old)
     dct[new] = val
 
-def read_in_q_k_v(state_dict, config, model_config):
+def read_in_q_k_v(state_dict, config, model_config, mlp_index):
 
-    head_nlayers = model_config['dino']['head_nlayers']
+    #head_nlayers = model_config['dino']['head_nlayers']
 
     i = 0
     ii_count = 0
@@ -210,17 +215,15 @@ def read_in_q_k_v(state_dict, config, model_config):
 
         #print('ii_count:', ii_count)
         #print('i:', i, 'ii', ii)
-        if ii_count == (head_nlayers - 1):
+        if ii_count == (mlp_index - 1):
             ii_count = 0
             i += 1
         else:
             ii_count += 1
 
-
-
 def convert_teacher_to_pytorch_dinov2(args, model_config):
 
-    pytorch_model = get_model(model_config)
+    pytorch_model, mlp_index = get_model(model_config)
 
     pytorch_model.eval()
 
@@ -256,19 +259,19 @@ def convert_teacher_to_pytorch_dinov2(args, model_config):
 
     print('Teacher model converted to pytorch model')
 
-    return pytorch_model
+    return pytorch_model, mlp_index
 
-def convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model):
+def convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model, mlp_index):
 
     config = get_dinov2_config(model_config)
 
     print('Converting PyTorch Dinov2 keys to HF...')
 
     state_dict = pytorch_model.state_dict()
-    rename_keys = create_rename_keys(config, model_config)
+    rename_keys = create_rename_keys(config, model_config, mlp_index)
     for src, dest in rename_keys:
         rename_key(state_dict, src, dest)
-    read_in_q_k_v(state_dict, config, model_config)
+    read_in_q_k_v(state_dict, config, model_config, mlp_index)
 
     for key, val in state_dict.copy().items():
         val = state_dict.pop(key)
@@ -335,9 +338,14 @@ def main(args):
     model_config = get_config()
 
     if (model_config is not None) and (os.path.isfile(args.teacher_checkpoint_path)):
-        pytorch_model = convert_teacher_to_pytorch_dinov2(args, model_config)
-        convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model)
+        pytorch_model, mlp_index = convert_teacher_to_pytorch_dinov2(args, model_config)
+        convert_pytorch_to_hf_dinov2(args, model_config, pytorch_model, mlp_index)
 
+    else:
+        if model_config is None:
+            print('Model config not provided.')
+        if os.path.isfile(args.teacher_checkpoint_path):
+            print('No teacher checkpoint found...')
 
 if __name__ == "__main__":
     import argparse
