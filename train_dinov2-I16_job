@@ -1,0 +1,65 @@
+#!/bin/bash
+###
+#SBATCH --job-name=dinov2
+#SBATCH --nodes=2
+#SBATCH --gpus-per-node=8
+#SBATCH --output="//project/ibi-staff/heartlens/logs/%x-%j.out"
+#SBATCH -p priority
+#SBATCH --account=vbu231_dgxllmf24
+
+export NCCL_DEBUG=INFO
+export NCCL_DEBUG_SUBSYS=INIT,GRAPH
+
+# configure network
+export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
+export MASTER_PORT=$((${SLURM_JOB_ID} % 16384 + 49152))
+export GPUS_PER_NODE=$SLURM_GPUS_PER_NODE
+export NNODES=$SLURM_NNODES
+export NUM_NODES=${NNODES}
+export NUM_GPU=${GPUS_PER_NODE}
+
+#export RANK=${SLURM_PROCID}
+#export WORLD_SIZE=${SLURM_NTASKS}
+#export LOCAL_RANK=${SLURM_LOCALID}
+
+export LOCAL_RANK=$SLURM_LOCALID
+export RANK=$SLURM_PROCID
+export WORLD_SIZE=$SLURM_NTASKS
+export WORLD_SIZE=8
+
+echo "MASTER_ADDR: $MASTER_ADDR"
+echo "MASTER_PORT: $MASTER_PORT"
+echo "GPUS_PER_NODE: $GPUS_PER_NODE"
+echo "NNODES: $NNODES"
+echo "RANK: $RANK"
+echo "WORLD_SIZE: $WORLD_SIZE"
+echo "LOCAL_RANK: $LOCAL_RANK"
+
+export NVIDIA_VISIBLE_DEVICES=all
+export NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+export MPI_TYPE=pmix
+
+export FORCE_TORCHRUN=1
+export CUDA_LAUNCH_BLOCKING=1
+
+# Log the assigned nodes
+echo "Using nodes: $SLURM_JOB_NODELIST"
+
+/bin/bash -c set > /project/ibi-staff/heartlens/set.log
+
+export CONTAINER=/project/ibi-staff/heartlens/container/dinov24.sqfs
+
+export MOUNTS=/project/ibi-staff/heartlens:/workspace
+
+export DATA_PATH=test
+
+#export COMMAND="torchrun --nproc_per_node=$GPUS_PER_NODE /workspace/pytorch-image-models/train.py /workspace/$DATA_PATH --output /workspace/custom_models --model vit_base_patch16_siglip_gap_512 --sched cosine --epochs 100 --warmup-epochs 5 --lr 0
+.4 --reprob 0.5 --remode pixel --batch-size 150 --amp -j 2 --val-num-samples 0"
+
+#export COMMAND="torchrun /workspace/dinov2/dinov2/train/train.py --config-file=/workspace/dinov2/vitl14.yaml --output-dir=/workspace/dinov2/output"
+
+export COMMAND="python /workspace/dinov2-I16/dinov2/run/train/train.py --nodes 1 --config-file=/workspace/dinov2/vitl14.yaml --output-dir=/workspace/dinov2/output"
+export COMMAND="torchrun --nodes 2 /workspace/dinov2-I16/dinov2/train/train.py --config-file=$1.yaml --output-dir=/workspace/dinov2-I16/$1
+
+srun --mpi=$MPI_TYPE --container-image=$CONTAINER --no-container-mount-home --container-mounts=$MOUNTS $COMMAND
